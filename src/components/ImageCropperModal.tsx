@@ -288,10 +288,10 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
           const naturalCropW = (cropBox.width / 100) * image.naturalWidth;
           const naturalCropH = (cropBox.height / 100) * image.naturalHeight;
 
-          // Target output dimensions (limit max output to 1200px for optimal speed and size)
+          // Target output dimensions (smart sizing based on aspect ratio to guarantee fast cloud sync)
           let outputWidth = Math.round(naturalCropW * zoom);
           let outputHeight = Math.round(naturalCropH * zoom);
-          const maxDim = 1200;
+          const maxDim = aspectRatio === '1:1' ? 500 : 800;
 
           if (outputWidth > maxDim || outputHeight > maxDim) {
             if (outputWidth > outputHeight) {
@@ -330,8 +330,8 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
           );
           ctx.restore();
 
-          // Compress to clean JPEG
-          const resultDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          // Compress to efficient, crisp JPEG (optimized for Firestore sync across devices)
+          const resultDataUrl = canvas.toDataURL('image/jpeg', 0.75);
           resolve(resultDataUrl);
         } catch (err) {
           reject(err);

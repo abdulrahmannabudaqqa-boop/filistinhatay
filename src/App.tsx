@@ -39,7 +39,7 @@ import {
 } from './data/initialData';
 
 import { db } from './firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
 
 function AppMain() {
@@ -69,8 +69,7 @@ function AppMain() {
       const saved = localStorage.getItem('pales_union_directory_members');
       if (saved) {
         const parsed = JSON.parse(saved);
-        const cleaned = parsed.filter((m: DirectoryMember) => !['member-2', 'member-3', 'member-4', 'member-5', 'member-6', 'member-7', 'member-8'].includes(m.id));
-        return cleaned.length > 0 ? cleaned : initialDirectoryMembers;
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : initialDirectoryMembers;
       }
       return initialDirectoryMembers;
     } catch (e) {
@@ -141,52 +140,46 @@ function AppMain() {
     }
   });
 
-  // Helper to save updates to Firestore with merge capability
+  // Helper to save updates to Firestore with merge capability and local cache sync
   const saveToFirestore = async (updates: any) => {
     try {
       const docRef = doc(db, 'portal_data', 'global_settings');
       await setDoc(docRef, updates, { merge: true });
-      console.log('Saved to Firestore successfully:', Object.keys(updates));
+      console.log('Saved to Firestore successfully across devices:', Object.keys(updates));
     } catch (err) {
       console.error('Failed to save to Firestore:', err);
     }
   };
 
-  // Load and synchronize data from Firestore on application load
+  // Real-time bidirectional synchronization with Firestore across all devices and tabs
   useEffect(() => {
-    const loadFirestoreData = async () => {
+    const docRef = doc(db, 'portal_data', 'global_settings');
+    
+    const unsubscribe = onSnapshot(docRef, async (docSnap) => {
       try {
-        const docRef = doc(db, 'portal_data', 'global_settings');
-        const docSnap = await getDoc(docRef);
-
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.news) {
+          if (data.news && Array.isArray(data.news)) {
             setNews(data.news);
             localStorage.setItem('pales_union_news', JSON.stringify(data.news));
           }
-          if (data.directoryMembers) {
-            const cleaned = (data.directoryMembers as DirectoryMember[]).filter((m: DirectoryMember) => !['member-2', 'member-3', 'member-4', 'member-5', 'member-6', 'member-7', 'member-8'].includes(m.id));
-            const finalMembers = cleaned.length > 0 ? cleaned : initialDirectoryMembers;
-            setDirectoryMembers(finalMembers);
-            localStorage.setItem('pales_union_directory_members', JSON.stringify(finalMembers));
-            if (cleaned.length !== data.directoryMembers.length) {
-              saveToFirestore({ directoryMembers: finalMembers });
-            }
+          if (data.directoryMembers && Array.isArray(data.directoryMembers)) {
+            setDirectoryMembers(data.directoryMembers);
+            localStorage.setItem('pales_union_directory_members', JSON.stringify(data.directoryMembers));
           }
-          if (data.courses) {
+          if (data.courses && Array.isArray(data.courses)) {
             setCourses(data.courses);
             localStorage.setItem('pales_union_courses', JSON.stringify(data.courses));
           }
-          if (data.deptAnnouncements) {
+          if (data.deptAnnouncements && Array.isArray(data.deptAnnouncements)) {
             setDeptAnnouncements(data.deptAnnouncements);
             localStorage.setItem('pales_union_dept_announcements', JSON.stringify(data.deptAnnouncements));
           }
-          if (data.activities) {
+          if (data.activities && Array.isArray(data.activities)) {
             setActivities(data.activities);
             localStorage.setItem('pales_union_activities', JSON.stringify(data.activities));
           }
-          if (data.links) {
+          if (data.links && Array.isArray(data.links)) {
             setLinks(data.links);
             localStorage.setItem('pales_union_links', JSON.stringify(data.links));
           }
@@ -194,7 +187,7 @@ function AppMain() {
             setUnivInfo(data.univInfo);
             localStorage.setItem('pales_union_univ_info', JSON.stringify(data.univInfo));
           }
-          if (data.announcements) {
+          if (data.announcements && Array.isArray(data.announcements)) {
             setAnnouncements(data.announcements);
             localStorage.setItem('pales_union_announcements', JSON.stringify(data.announcements));
           }
@@ -202,11 +195,10 @@ function AppMain() {
             setLogo(data.logo);
             localStorage.setItem('pales_union_custom_logo', data.logo);
           }
-          if (data.assistants) {
+          if (data.assistants && Array.isArray(data.assistants)) {
             setAssistants(data.assistants);
             localStorage.setItem('pales_union_assistants', JSON.stringify(data.assistants));
           }
-          console.log('Synchronized application state with Firestore data successfully');
         } else {
           // Document does not exist yet (first-time deployment). Let's seed it.
           const seedPayload = {
@@ -222,18 +214,20 @@ function AppMain() {
             assistants: []
           };
           await setDoc(docRef, seedPayload);
-          console.log('Seeded Firestore with initial configuration data successfully');
         }
       } catch (err) {
-        console.error('Error synchronizing with Firestore:', err);
+        console.error('Error in Firestore real-time listener handler:', err);
       }
-    };
+    }, (error) => {
+      console.error('Firestore snapshot listener failed:', error);
+    });
 
-    loadFirestoreData();
+    return () => unsubscribe();
   }, []);
 
-  // Deep-linking tab synchronization on load and hash/search handling
+  // Ensure the default tab is always 'home' upon entering the website, while supporting in-page navigation
   useEffect(() => {
+    // When a user visits the website root or refreshes without explicit navigation intent, ensure home is set
     const handleUrlTab = () => {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
@@ -243,6 +237,8 @@ function AppMain() {
       const validTabs = ['home', 'directory', 'news', 'links', 'courses', 'deptAnnouncements', 'activities', 'pastActivities', 'university', 'residency', 'admin'];
       if (target && validTabs.includes(target)) {
         setCurrentTab(target);
+      } else {
+        setCurrentTab('home');
       }
     };
 
