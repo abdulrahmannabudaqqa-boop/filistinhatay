@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ImageCropperModal } from './ImageCropperModal';
+import { compressImageFile, compressDataUrl } from '../utils/imageCompressor';
 // @ts-ignore
 import logoImg from '../assets/images/logo.jpeg';
 
@@ -227,7 +228,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     title: ''
   });
 
-  const handleImageUpload = (
+  const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     setter: (imgUrl: string) => void,
     preset: 'free' | '16:9' | '4:3' | '1:1' | '3:2' = 'free',
@@ -235,21 +236,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          const originalBase64 = reader.result;
-          // Open cropping modal to let the user select/crop the desired portion
-          setCropModalState({
-            isOpen: true,
-            imageSrc: originalBase64,
-            onCropComplete: setter,
-            aspectRatioPreset: preset,
-            title: customTitle
-          });
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Pre-compress to max 1200px so high-res phone camera shots (5-12MB) load effortlessly
+        const compressedBase64 = await compressImageFile(file, 1200, 1200, 0.85);
+        setCropModalState({
+          isOpen: true,
+          imageSrc: compressedBase64,
+          onCropComplete: setter,
+          aspectRatioPreset: preset,
+          title: customTitle
+        });
+      } catch (err) {
+        console.error('Image compression failed, falling back to direct reader:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            setCropModalState({
+              isOpen: true,
+              imageSrc: reader.result,
+              onCropComplete: setter,
+              aspectRatioPreset: preset,
+              title: customTitle
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      }
       // Reset input value so re-selecting same file triggers onChange
       e.target.value = '';
     }
@@ -289,10 +301,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
-  const handleSaveNews = (e: React.FormEvent) => {
+  const handleSaveNews = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editNewsItem || !editNewsItem.id) return;
-    onSaveNews(editNewsItem as NewsItem);
+    let finalItem = { ...editNewsItem } as NewsItem;
+    if (finalItem.image && finalItem.image.startsWith('data:image')) {
+      try {
+        finalItem.image = await compressDataUrl(finalItem.image, 900, 900, 0.75);
+      } catch (err) {
+        console.warn('Image optimization fallback:', err);
+      }
+    }
+    onSaveNews(finalItem);
     setEditNewsItem(null);
     triggerToast(t('actionSuccess'));
   };
@@ -335,7 +355,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
-  const handleSaveDirectoryMember = (e: React.FormEvent) => {
+  const handleSaveDirectoryMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editDirectoryMemberItem || !editDirectoryMemberItem.id) return;
     
@@ -354,6 +374,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const arCategory = editDirectoryMemberItem.category?.ar?.trim() || editDirectoryMemberItem.category?.tr?.trim() || (language === 'ar' ? 'طلاب البكالوريوس' : 'Lisans Öğrencileri');
     const trCategory = editDirectoryMemberItem.category?.tr?.trim() || editDirectoryMemberItem.category?.ar?.trim() || (language === 'ar' ? 'طلاب البكالوريوس' : 'Lisans Öğrencileri');
 
+    let finalImage = editDirectoryMemberItem.image?.trim() || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600';
+    if (finalImage.startsWith('data:image')) {
+      try {
+        finalImage = await compressDataUrl(finalImage, 500, 500, 0.75);
+      } catch (err) {
+        console.warn('Image optimization fallback:', err);
+      }
+    }
+
     const cleanMember: DirectoryMember = {
       id: editDirectoryMemberItem.id,
       name: { ar: arName, tr: trName },
@@ -371,7 +400,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         ar: editDirectoryMemberItem.bio?.ar?.trim() || '',
         tr: editDirectoryMemberItem.bio?.tr?.trim() || editDirectoryMemberItem.bio?.ar?.trim() || ''
       },
-      image: editDirectoryMemberItem.image?.trim() || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600',
+      image: finalImage,
       email: editDirectoryMemberItem.email?.trim() || '',
       phone: editDirectoryMemberItem.phone?.trim() || '',
       linkedin: editDirectoryMemberItem.linkedin?.trim() || ''
@@ -670,10 +699,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
-  const handleSaveActivity = (e: React.FormEvent) => {
+  const handleSaveActivity = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editActivityItem || !editActivityItem.id) return;
-    onSaveActivity(editActivityItem as ActivityItem);
+    let finalItem = { ...editActivityItem } as ActivityItem;
+    if (finalItem.image && finalItem.image.startsWith('data:image')) {
+      try {
+        finalItem.image = await compressDataUrl(finalItem.image, 900, 900, 0.75);
+      } catch (err) {
+        console.warn('Image optimization fallback:', err);
+      }
+    }
+    onSaveActivity(finalItem);
     setEditActivityItem(null);
     triggerToast(t('actionSuccess'));
   };

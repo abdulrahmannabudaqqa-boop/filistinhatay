@@ -5,6 +5,7 @@ import {
   Check, X, RefreshCw, Eye, Sparkles, Image as ImageIcon, Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { compressDataUrl } from '../utils/imageCompressor';
 
 interface ImageCropperModalProps {
   isOpen: boolean;
@@ -364,8 +365,13 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     }
   };
 
-  const handleUseOriginal = () => {
-    onCropComplete(imageSrc);
+  const handleUseOriginal = async () => {
+    try {
+      const compressed = await compressDataUrl(imageSrc, 800, 800, 0.75);
+      onCropComplete(compressed);
+    } catch {
+      onCropComplete(imageSrc);
+    }
     onClose();
   };
 
