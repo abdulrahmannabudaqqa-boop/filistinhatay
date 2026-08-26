@@ -41,6 +41,24 @@ import {
 import { db } from './firebase';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
+// Sanitize all data recursively before sending to Firestore to guarantee no undefined fields are passed
+function sanitizeForFirestore(obj: any): any {
+  if (obj === undefined) return null;
+  if (obj === null) return null;
+  if (typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeForFirestore(item));
+  }
+  const clean: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      clean[key] = sanitizeForFirestore(value);
+    } else {
+      clean[key] = '';
+    }
+  }
+  return clean;
+}
 
 function AppMain() {
   const { t, dir } = useLanguage();
@@ -143,11 +161,14 @@ function AppMain() {
   // Helper to save updates to Firestore with merge capability and local cache sync
   const saveToFirestore = async (updates: any) => {
     try {
+      const sanitized = sanitizeForFirestore(updates);
       const docRef = doc(db, 'portal_data', 'global_settings');
-      await setDoc(docRef, updates, { merge: true });
+      await setDoc(docRef, sanitized, { merge: true });
       console.log('Saved to Firestore successfully across devices:', Object.keys(updates));
+      return true;
     } catch (err) {
       console.error('Failed to save to Firestore:', err);
+      return false;
     }
   };
 
@@ -159,45 +180,81 @@ function AppMain() {
       try {
         if (docSnap.exists()) {
           const data = docSnap.data();
+          const missingFieldsToSeed: Record<string, any> = {};
+
           if (data.news && Array.isArray(data.news)) {
             setNews(data.news);
             localStorage.setItem('pales_union_news', JSON.stringify(data.news));
+          } else {
+            missingFieldsToSeed.news = initialNews;
           }
+
           if (data.directoryMembers && Array.isArray(data.directoryMembers)) {
             setDirectoryMembers(data.directoryMembers);
             localStorage.setItem('pales_union_directory_members', JSON.stringify(data.directoryMembers));
+          } else {
+            // Automatically initialize directory members in Firestore if not present yet
+            missingFieldsToSeed.directoryMembers = initialDirectoryMembers;
+            setDirectoryMembers(initialDirectoryMembers);
+            localStorage.setItem('pales_union_directory_members', JSON.stringify(initialDirectoryMembers));
           }
+
           if (data.courses && Array.isArray(data.courses)) {
             setCourses(data.courses);
             localStorage.setItem('pales_union_courses', JSON.stringify(data.courses));
+          } else {
+            missingFieldsToSeed.courses = initialCourses;
           }
+
           if (data.deptAnnouncements && Array.isArray(data.deptAnnouncements)) {
             setDeptAnnouncements(data.deptAnnouncements);
             localStorage.setItem('pales_union_dept_announcements', JSON.stringify(data.deptAnnouncements));
+          } else {
+            missingFieldsToSeed.deptAnnouncements = initialDeptAnnouncements;
           }
+
           if (data.activities && Array.isArray(data.activities)) {
             setActivities(data.activities);
             localStorage.setItem('pales_union_activities', JSON.stringify(data.activities));
+          } else {
+            missingFieldsToSeed.activities = initialActivities;
           }
+
           if (data.links && Array.isArray(data.links)) {
             setLinks(data.links);
             localStorage.setItem('pales_union_links', JSON.stringify(data.links));
+          } else {
+            missingFieldsToSeed.links = initialImportantLinks;
           }
+
           if (data.univInfo) {
             setUnivInfo(data.univInfo);
             localStorage.setItem('pales_union_univ_info', JSON.stringify(data.univInfo));
+          } else {
+            missingFieldsToSeed.univInfo = initialUniversityInfo;
           }
+
           if (data.announcements && Array.isArray(data.announcements)) {
             setAnnouncements(data.announcements);
             localStorage.setItem('pales_union_announcements', JSON.stringify(data.announcements));
+          } else {
+            missingFieldsToSeed.announcements = initialAnnouncements;
           }
+
           if (data.logo) {
             setLogo(data.logo);
             localStorage.setItem('pales_union_custom_logo', data.logo);
           }
+
           if (data.assistants && Array.isArray(data.assistants)) {
             setAssistants(data.assistants);
             localStorage.setItem('pales_union_assistants', JSON.stringify(data.assistants));
+          }
+
+          // If any column/field was missing in Firestore, sync it immediately
+          if (Object.keys(missingFieldsToSeed).length > 0) {
+            console.log('Seeding missing columns/fields in Firestore database:', Object.keys(missingFieldsToSeed));
+            await setDoc(docRef, sanitizeForFirestore(missingFieldsToSeed), { merge: true });
           }
         } else {
           // Document does not exist yet (first-time deployment). Let's seed it.
@@ -213,7 +270,7 @@ function AppMain() {
             logo: logoImg,
             assistants: []
           };
-          await setDoc(docRef, seedPayload);
+          await setDoc(docRef, sanitizeForFirestore(seedPayload));
         }
       } catch (err) {
         console.error('Error in Firestore real-time listener handler:', err);

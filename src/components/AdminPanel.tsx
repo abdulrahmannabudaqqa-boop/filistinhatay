@@ -338,8 +338,47 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleSaveDirectoryMember = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editDirectoryMemberItem || !editDirectoryMemberItem.id) return;
+    
+    // Ensure resilient bilingual fallbacks so entering Arabic or Turkish alone succeeds perfectly
+    const arName = editDirectoryMemberItem.name?.ar?.trim() || editDirectoryMemberItem.name?.tr?.trim() || '';
+    const trName = editDirectoryMemberItem.name?.tr?.trim() || editDirectoryMemberItem.name?.ar?.trim() || '';
+
+    if (!arName && !trName) {
+      alert(language === 'ar' ? 'يرجى كتابة اسم العضو / الطالب أولاً' : 'Lütfen üye / öğrenci adını giriniz');
+      return;
+    }
+
+    const arMajor = editDirectoryMemberItem.major?.ar?.trim() || editDirectoryMemberItem.major?.tr?.trim() || (language === 'ar' ? 'طالب جامعي' : 'Üniversite Öğrencisi');
+    const trMajor = editDirectoryMemberItem.major?.tr?.trim() || editDirectoryMemberItem.major?.ar?.trim() || (language === 'ar' ? 'طالب جامعي' : 'Üniversite Öğrencisi');
+
+    const arCategory = editDirectoryMemberItem.category?.ar?.trim() || editDirectoryMemberItem.category?.tr?.trim() || (language === 'ar' ? 'طلاب البكالوريوس' : 'Lisans Öğrencileri');
+    const trCategory = editDirectoryMemberItem.category?.tr?.trim() || editDirectoryMemberItem.category?.ar?.trim() || (language === 'ar' ? 'طلاب البكالوريوس' : 'Lisans Öğrencileri');
+
+    const cleanMember: DirectoryMember = {
+      id: editDirectoryMemberItem.id,
+      name: { ar: arName, tr: trName },
+      major: { ar: arMajor, tr: trMajor },
+      category: { ar: arCategory, tr: trCategory },
+      roleTitle: {
+        ar: editDirectoryMemberItem.roleTitle?.ar?.trim() || '',
+        tr: editDirectoryMemberItem.roleTitle?.tr?.trim() || editDirectoryMemberItem.roleTitle?.ar?.trim() || ''
+      },
+      academicYear: {
+        ar: editDirectoryMemberItem.academicYear?.ar?.trim() || '',
+        tr: editDirectoryMemberItem.academicYear?.tr?.trim() || editDirectoryMemberItem.academicYear?.ar?.trim() || ''
+      },
+      bio: {
+        ar: editDirectoryMemberItem.bio?.ar?.trim() || '',
+        tr: editDirectoryMemberItem.bio?.tr?.trim() || editDirectoryMemberItem.bio?.ar?.trim() || ''
+      },
+      image: editDirectoryMemberItem.image?.trim() || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600',
+      email: editDirectoryMemberItem.email?.trim() || '',
+      phone: editDirectoryMemberItem.phone?.trim() || '',
+      linkedin: editDirectoryMemberItem.linkedin?.trim() || ''
+    };
+
     if (onSaveDirectoryMember) {
-      onSaveDirectoryMember(editDirectoryMemberItem as DirectoryMember);
+      onSaveDirectoryMember(cleanMember);
     }
     setEditDirectoryMemberItem(null);
     triggerToast(t('actionSuccess'));
@@ -983,7 +1022,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </label>
                     <input
                       id="member-form-name-ar"
-                      type="text" required
+                      type="text"
                       value={editDirectoryMemberItem.name?.ar || ''}
                       onChange={(e) => setEditDirectoryMemberItem({
                         ...editDirectoryMemberItem,
@@ -995,11 +1034,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                   <div className="space-y-1">
                     <label className="block font-bold text-slate-700">
-                      {language === 'ar' ? 'الاسم الكامل (بالتركية / اللاتينية)' : 'Tam İsim (Türkçe)'} *
+                      {language === 'ar' ? 'الاسم الكامل (بالتركية / اللاتينية - اختياري)' : 'Tam İsim (Türkçe / Opsiyonel)'}
                     </label>
                     <input
                       id="member-form-name-tr"
-                      type="text" required
+                      type="text"
                       value={editDirectoryMemberItem.name?.tr || ''}
                       onChange={(e) => setEditDirectoryMemberItem({
                         ...editDirectoryMemberItem,
@@ -1015,11 +1054,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="block font-bold text-slate-700">
-                      {language === 'ar' ? 'التخصص الدراسي (بالعربية)' : 'Bölüm / Uzmanlık (Arapça)'} *
+                      {language === 'ar' ? 'التخصص الدراسي (بالعربية)' : 'Bölüm / Uzmanlık (Arapça)'}
                     </label>
                     <input
                       id="member-form-major-ar"
-                      type="text" required
+                      type="text"
                       value={editDirectoryMemberItem.major?.ar || ''}
                       onChange={(e) => setEditDirectoryMemberItem({
                         ...editDirectoryMemberItem,
@@ -1031,11 +1070,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                   <div className="space-y-1">
                     <label className="block font-bold text-slate-700">
-                      {language === 'ar' ? 'التخصص الدراسي (بالتركية)' : 'Bölüm / Uzmanlık (Türkçe)'} *
+                      {language === 'ar' ? 'التخصص الدراسي (بالتركية - اختياري)' : 'Bölüm / Uzmanlık (Türkçe)'}
                     </label>
                     <input
                       id="member-form-major-tr"
-                      type="text" required
+                      type="text"
                       value={editDirectoryMemberItem.major?.tr || ''}
                       onChange={(e) => setEditDirectoryMemberItem({
                         ...editDirectoryMemberItem,
@@ -1072,7 +1111,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 {/* 3. Category / Classification */}
                 <div className="space-y-2">
                   <label className="block font-bold text-slate-700">
-                    {language === 'ar' ? 'التصنيف / الفئة' : 'Kategori / Sınıflandırma'} *
+                    {language === 'ar' ? 'التصنيف / الفئة' : 'Kategori / Sınıflandırma'}
                   </label>
 
                   {/* Preset Category Buttons */}
@@ -1103,7 +1142,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                     <input
                       id="member-form-category-ar"
-                      type="text" required
+                      type="text"
                       value={editDirectoryMemberItem.category?.ar || ''}
                       onChange={(e) => setEditDirectoryMemberItem({
                         ...editDirectoryMemberItem,
@@ -1114,13 +1153,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     />
                     <input
                       id="member-form-category-tr"
-                      type="text" required
+                      type="text"
                       value={editDirectoryMemberItem.category?.tr || ''}
                       onChange={(e) => setEditDirectoryMemberItem({
                         ...editDirectoryMemberItem,
                         category: { ...editDirectoryMemberItem.category!, tr: e.target.value }
                       })}
-                      placeholder={language === 'ar' ? 'التصنيف بالتركية' : 'Kategori (Türkçe)'}
+                      placeholder={language === 'ar' ? 'التصنيف بالتركية (اختياري)' : 'Kategori (Türkçe)'}
                       className="w-full p-2 border border-slate-200 rounded-lg text-xs"
                     />
                   </div>
