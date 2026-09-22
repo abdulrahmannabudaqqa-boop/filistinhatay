@@ -14,14 +14,19 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pales_union_theme');
-      if (saved === 'dark' || saved === 'light') {
-        return saved;
-      }
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
+      try {
+        // تنظيف القيمة التلقائية القديمة التي كانت تُفعل الوضع الداكن بناءً على إعدادات نظام الجهاز
+        localStorage.removeItem('pales_union_theme');
+        
+        const userChoice = localStorage.getItem('pales_union_theme_user_set');
+        if (userChoice === 'dark' || userChoice === 'light') {
+          return userChoice;
+        }
+      } catch (e) {
+        console.warn('Could not access localStorage for theme:', e);
       }
     }
+    // الوضع النهاري (Light Mode) هو المفعل افتراضياً عند الدخول
     return 'light';
   });
 
@@ -30,7 +35,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     try {
-      localStorage.setItem('pales_union_theme', newTheme);
+      localStorage.setItem('pales_union_theme_user_set', newTheme);
     } catch (e) {
       console.warn('Could not save theme to localStorage:', e);
     }
