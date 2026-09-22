@@ -23,6 +23,8 @@ const ResidencySection = lazy(() => import('./components/ResidencySection').then
 const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
 const DeptAnnouncementsSection = lazy(() => import('./components/DeptAnnouncementsSection').then(m => ({ default: m.DeptAnnouncementsSection })));
 const DirectorySection = lazy(() => import('./components/DirectorySection').then(m => ({ default: m.DirectorySection })));
+const IskenderunGuideSection = lazy(() => import('./components/IskenderunGuideSection').then(m => ({ default: m.IskenderunGuideSection })));
+const StudentDormsSection = lazy(() => import('./components/StudentDormsSection').then(m => ({ default: m.StudentDormsSection })));
 
 // @ts-ignore
 import logoImg from './assets/images/logo.jpeg';
@@ -158,23 +160,49 @@ function AppMain() {
     }
   });
 
-  // Helper to save updates to Firestore with merge capability and local cache sync
+  // Helper to save updates to Firestore with merge capability and local cache sync + server backup
   const saveToFirestore = async (updates: any) => {
     try {
       const sanitized = sanitizeForFirestore(updates);
       const docRef = doc(db, 'portal_data', 'global_settings');
       await setDoc(docRef, sanitized, { merge: true });
       console.log('Saved to Firestore successfully across devices:', Object.keys(updates));
-      return true;
     } catch (err) {
-      console.error('Failed to save to Firestore:', err);
-      return false;
+      console.error('Failed to save to Firestore directly:', err);
     }
+
+    // Also persist to server-side backup API (/api/site-data) to ensure admin data is permanently safe
+    try {
+      await fetch('/api/site-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+    } catch (apiErr) {
+      console.warn('Backup to /api/site-data:', apiErr);
+    }
+    return true;
   };
 
   // Real-time bidirectional synchronization with Firestore across all devices and tabs
   useEffect(() => {
     const docRef = doc(db, 'portal_data', 'global_settings');
+
+    // Helper to get admin-saved data from localStorage if exists, otherwise fallback to defaults
+    const getSavedOrDefault = (key: string, defaultVal: any) => {
+      try {
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(defaultVal)) {
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          } else if (parsed && typeof parsed === 'object') {
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      return defaultVal;
+    };
     
     const unsubscribe = onSnapshot(docRef, async (docSnap) => {
       try {
@@ -186,59 +214,73 @@ function AppMain() {
             setNews(data.news);
             localStorage.setItem('pales_union_news', JSON.stringify(data.news));
           } else {
-            missingFieldsToSeed.news = initialNews;
+            const preservedNews = getSavedOrDefault('pales_union_news', initialNews);
+            missingFieldsToSeed.news = preservedNews;
+            setNews(preservedNews);
           }
 
           if (data.directoryMembers && Array.isArray(data.directoryMembers)) {
             setDirectoryMembers(data.directoryMembers);
             localStorage.setItem('pales_union_directory_members', JSON.stringify(data.directoryMembers));
           } else {
-            // Automatically initialize directory members in Firestore if not present yet
-            missingFieldsToSeed.directoryMembers = initialDirectoryMembers;
-            setDirectoryMembers(initialDirectoryMembers);
-            localStorage.setItem('pales_union_directory_members', JSON.stringify(initialDirectoryMembers));
+            const preservedMembers = getSavedOrDefault('pales_union_directory_members', initialDirectoryMembers);
+            missingFieldsToSeed.directoryMembers = preservedMembers;
+            setDirectoryMembers(preservedMembers);
+            localStorage.setItem('pales_union_directory_members', JSON.stringify(preservedMembers));
           }
 
           if (data.courses && Array.isArray(data.courses)) {
             setCourses(data.courses);
             localStorage.setItem('pales_union_courses', JSON.stringify(data.courses));
           } else {
-            missingFieldsToSeed.courses = initialCourses;
+            const preservedCourses = getSavedOrDefault('pales_union_courses', initialCourses);
+            missingFieldsToSeed.courses = preservedCourses;
+            setCourses(preservedCourses);
           }
 
           if (data.deptAnnouncements && Array.isArray(data.deptAnnouncements)) {
             setDeptAnnouncements(data.deptAnnouncements);
             localStorage.setItem('pales_union_dept_announcements', JSON.stringify(data.deptAnnouncements));
           } else {
-            missingFieldsToSeed.deptAnnouncements = initialDeptAnnouncements;
+            const preservedDeptAnns = getSavedOrDefault('pales_union_dept_announcements', initialDeptAnnouncements);
+            missingFieldsToSeed.deptAnnouncements = preservedDeptAnns;
+            setDeptAnnouncements(preservedDeptAnns);
           }
 
           if (data.activities && Array.isArray(data.activities)) {
             setActivities(data.activities);
             localStorage.setItem('pales_union_activities', JSON.stringify(data.activities));
           } else {
-            missingFieldsToSeed.activities = initialActivities;
+            const preservedActivities = getSavedOrDefault('pales_union_activities', initialActivities);
+            missingFieldsToSeed.activities = preservedActivities;
+            setActivities(preservedActivities);
           }
 
           if (data.links && Array.isArray(data.links)) {
             setLinks(data.links);
             localStorage.setItem('pales_union_links', JSON.stringify(data.links));
           } else {
-            missingFieldsToSeed.links = initialImportantLinks;
+            const preservedLinks = getSavedOrDefault('pales_union_links', initialImportantLinks);
+            missingFieldsToSeed.links = preservedLinks;
+            setLinks(preservedLinks);
           }
 
           if (data.univInfo) {
             setUnivInfo(data.univInfo);
             localStorage.setItem('pales_union_univ_info', JSON.stringify(data.univInfo));
           } else {
-            missingFieldsToSeed.univInfo = initialUniversityInfo;
+            const preservedUniv = getSavedOrDefault('pales_union_univ_info', initialUniversityInfo);
+            missingFieldsToSeed.univInfo = preservedUniv;
+            setUnivInfo(preservedUniv);
           }
 
           if (data.announcements && Array.isArray(data.announcements)) {
             setAnnouncements(data.announcements);
             localStorage.setItem('pales_union_announcements', JSON.stringify(data.announcements));
           } else {
-            missingFieldsToSeed.announcements = initialAnnouncements;
+            const preservedAnns = getSavedOrDefault('pales_union_announcements', initialAnnouncements);
+            missingFieldsToSeed.announcements = preservedAnns;
+            setAnnouncements(preservedAnns);
           }
 
           if (data.logo) {
@@ -253,22 +295,22 @@ function AppMain() {
 
           // If any column/field was missing in Firestore, sync it immediately
           if (Object.keys(missingFieldsToSeed).length > 0) {
-            console.log('Seeding missing columns/fields in Firestore database:', Object.keys(missingFieldsToSeed));
+            console.log('Preserving admin data and syncing to Firestore database:', Object.keys(missingFieldsToSeed));
             await setDoc(docRef, sanitizeForFirestore(missingFieldsToSeed), { merge: true });
           }
         } else {
-          // Document does not exist yet (first-time deployment). Let's seed it.
+          // Document does not exist yet. Seed it with any locally preserved admin data first!
           const seedPayload = {
-            news: initialNews,
-            directoryMembers: initialDirectoryMembers,
-            courses: initialCourses,
-            deptAnnouncements: initialDeptAnnouncements,
-            activities: initialActivities,
-            links: initialImportantLinks,
-            univInfo: initialUniversityInfo,
-            announcements: initialAnnouncements,
-            logo: logoImg,
-            assistants: []
+            news: getSavedOrDefault('pales_union_news', initialNews),
+            directoryMembers: getSavedOrDefault('pales_union_directory_members', initialDirectoryMembers),
+            courses: getSavedOrDefault('pales_union_courses', initialCourses),
+            deptAnnouncements: getSavedOrDefault('pales_union_dept_announcements', initialDeptAnnouncements),
+            activities: getSavedOrDefault('pales_union_activities', initialActivities),
+            links: getSavedOrDefault('pales_union_links', initialImportantLinks),
+            univInfo: getSavedOrDefault('pales_union_univ_info', initialUniversityInfo),
+            announcements: getSavedOrDefault('pales_union_announcements', initialAnnouncements),
+            logo: localStorage.getItem('pales_union_custom_logo') || logoImg,
+            assistants: getSavedOrDefault('pales_union_assistants', [])
           };
           await setDoc(docRef, sanitizeForFirestore(seedPayload));
         }
@@ -291,7 +333,7 @@ function AppMain() {
       const hashParam = window.location.hash.replace('#', '');
       
       const target = tabParam || hashParam;
-      const validTabs = ['home', 'directory', 'news', 'links', 'courses', 'deptAnnouncements', 'activities', 'pastActivities', 'university', 'residency', 'admin'];
+      const validTabs = ['home', 'directory', 'news', 'links', 'courses', 'deptAnnouncements', 'activities', 'pastActivities', 'university', 'residency', 'iskenderun', 'admin'];
       if (target && validTabs.includes(target)) {
         setCurrentTab(target);
       } else {
@@ -617,6 +659,10 @@ function AppMain() {
         return <UniversityInfoSection info={univInfo} />;
       case 'residency':
         return <ResidencySection />;
+      case 'iskenderun':
+        return <IskenderunGuideSection />;
+      case 'dormitories':
+        return <StudentDormsSection />;
       case 'admin':
         return isAdminLoggedIn ? (
           <AdminPanel

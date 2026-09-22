@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { NewsItem, CourseItem, DeptAnnouncementItem, ActivityItem, ImportantLink, UniversityInfo, TopAnnouncement, DirectoryMember } from '../types';
+import { NewsItem, CourseItem, DeptAnnouncementItem, ActivityItem, ImportantLink, UniversityInfo, TopAnnouncement, DirectoryMember, CityPlace } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { 
   Plus, Edit2, Trash2, Save, FileText, Newspaper, BookOpen, Bell,
-  Ticket, Link2, Building2, Megaphone, CheckCircle2, AlertTriangle, Users, Eye, Crop, GraduationCap, Tag, Search
+  Ticket, Link2, Building2, Megaphone, CheckCircle2, AlertTriangle, Users, Eye, Crop, GraduationCap, Tag, Search, MapPin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ImageCropperModal } from './ImageCropperModal';
+import { AdminCityGuideTab } from './AdminCityGuideTab';
 import { compressImageFile, compressDataUrl } from '../utils/imageCompressor';
 // @ts-ignore
 import logoImg from '../assets/images/logo.jpeg';
@@ -46,11 +47,15 @@ interface AdminPanelProps {
   onSaveDirectoryMember?: (item: DirectoryMember) => void;
   onDeleteDirectoryMember?: (id: string) => void;
 
+  cityPlaces?: CityPlace[];
+  onSaveCityPlace?: (item: CityPlace) => void;
+  onDeleteCityPlace?: (id: string) => void;
+
   assistants: any[];
   onSaveAssistants: (updated: any[]) => void;
 }
 
-type AdminTab = 'news' | 'directory' | 'courses' | 'deptAnnouncements' | 'activities' | 'links' | 'univ' | 'announcements' | 'logo' | 'assistants';
+type AdminTab = 'news' | 'directory' | 'cityGuide' | 'courses' | 'deptAnnouncements' | 'activities' | 'links' | 'univ' | 'announcements' | 'logo' | 'assistants';
 
 const DEFAULT_FACULTIES = [
   {
@@ -100,6 +105,13 @@ const DEFAULT_FACULTIES = [
     departments: [
       { ar: "المدرسة التحضيرية للغات", tr: "Hazırlık Sınıfı" }
     ]
+  },
+  {
+    name: { ar: "مركز تطوير المهارات والقيادة الطلابية", tr: "Liderlik ve Beceri Geliştirme Merkezi" },
+    departments: [
+      { ar: "القيادة وإدارة الفرق", tr: "Liderlik ve Takım Yönetimi" },
+      { ar: "المهارات الشخصية وسوق العمل", tr: "Kariyer ve Yumuşak Beceriler" }
+    ]
   }
 ];
 
@@ -115,6 +127,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   directoryMembers = [],
   onSaveDirectoryMember,
   onDeleteDirectoryMember,
+  cityPlaces = [],
+  onSaveCityPlace,
+  onDeleteCityPlace,
   assistants: propsAssistants,
   onSaveAssistants
 }) => {
@@ -800,6 +815,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const tabs: Array<{ id: AdminTab; label: string; icon: React.ReactNode }> = [
     { id: 'news', label: t('tabNews'), icon: <Newspaper className="w-4 h-4" /> },
     { id: 'directory', label: language === 'ar' ? 'دليل وبطاقات الطلاب' : 'Öğrenci Kartları', icon: <Users className="w-4 h-4" /> },
+    { id: 'cityGuide', label: language === 'ar' ? 'دليل إسكندرون' : 'İskenderun Rehberi', icon: <MapPin className="w-4 h-4" /> },
     { id: 'courses', label: t('tabCourses'), icon: <BookOpen className="w-4 h-4" /> },
     { id: 'deptAnnouncements', label: t('tabDeptAnnouncements'), icon: <Bell className="w-4 h-4" /> },
     { id: 'activities', label: t('tabActivities'), icon: <Ticket className="w-4 h-4" /> },
@@ -3167,6 +3183,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* CITY GUIDE TAB */}
+        {activeTab === 'cityGuide' && (
+          <div id="admin-tab-cityguide-content">
+            <AdminCityGuideTab
+              places={cityPlaces}
+              onSavePlace={(place) => {
+                if (onSaveCityPlace) onSaveCityPlace(place);
+                triggerToast(language === 'ar' ? 'تم حفظ المكان بنجاح!' : 'Mekan başarıyla kaydedildi!');
+              }}
+              onDeletePlace={(id) => {
+                if (onDeleteCityPlace) onDeleteCityPlace(id);
+                triggerToast(language === 'ar' ? 'تم حذف المكان بنجاح!' : 'Mekan başarıyla silindi!');
+              }}
+              handleImageUpload={handleImageUpload}
+              onOpenCropper={handleOpenCropperForExisting}
+            />
           </div>
         )}
 

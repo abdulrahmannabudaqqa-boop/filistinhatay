@@ -5,7 +5,7 @@ import {
   Search, BookOpen, Download, FileText, Calendar, CheckCircle, 
   Folder, FolderOpen, ChevronDown, ChevronUp, Cpu, Anchor, 
   Plane, Compass, Globe, Languages, GraduationCap, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink,
-  Share2, Mail, CheckCircle2
+  Share2, Mail, CheckCircle2, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -73,6 +73,13 @@ const DEFAULT_FACULTIES = [
     departments: [
       { ar: "المدرسة التحضيرية للغات", tr: "Hazırlık Sınıfı" }
     ]
+  },
+  {
+    name: { ar: "مركز تطوير المهارات والقيادة الطلابية", tr: "Liderlik ve Beceri Geliştirme Merkezi" },
+    departments: [
+      { ar: "القيادة وإدارة الفرق", tr: "Liderlik ve Takım Yönetimi" },
+      { ar: "المهارات الشخصية وسوق العمل", tr: "Kariyer ve Yumuşak Beceriler" }
+    ]
   }
 ];
 
@@ -84,6 +91,7 @@ const getFacultyIcon = (index: number) => {
     case 3: return <Compass className="w-8 h-8 text-burgundy-700 shrink-0" />;
     case 4: return <Globe className="w-8 h-8 text-burgundy-700 shrink-0" />;
     case 5: return <Languages className="w-8 h-8 text-burgundy-700 shrink-0" />;
+    case 6: return <Users className="w-8 h-8 text-burgundy-700 shrink-0" />;
     default: return <GraduationCap className="w-8 h-8 text-burgundy-700 shrink-0" />;
   }
 };

@@ -254,21 +254,15 @@ export const DirectorySection: React.FC<DirectorySectionProps> = ({ members }) =
               >
                 {/* Card Top: Image & Badges */}
                 <div className="relative aspect-[4/3] bg-slate-100 dark:bg-slate-900 overflow-hidden shrink-0">
-                  {member.image ? (
-                    <img
-                      src={member.image}
-                      alt={memberName}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 text-slate-400">
-                      <User className="w-16 h-16 stroke-[1.2]" />
-                      <span className="text-[11px] font-bold mt-1 text-slate-400">
-                        {memberName.charAt(0)}
-                      </span>
-                    </div>
-                  )}
+                  <img
+                    src={member.image || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&auto=format&fit=crop&q=70'}
+                    alt={memberName}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&auto=format&fit=crop&q=70';
+                    }}
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                  />
 
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />

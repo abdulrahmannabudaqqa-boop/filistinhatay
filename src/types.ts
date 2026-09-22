@@ -158,15 +158,69 @@ export interface DirectoryMember {
   bio?: MultilingualText;
 }
 
-export type CityPlaceCategory = 
-  | 'cafes' 
-  | 'transport' 
-  | 'shopping' 
-  | 'services' 
-  | 'districts' 
-  | 'food' 
+export interface IskenderunPlace {
+  id: string;
+  name: MultilingualText;
+  category: 'landmark' | 'park' | 'museum' | 'historic' | 'coast';
+  categoryLabel: MultilingualText;
+  description: MultilingualText;
+  features: MultilingualText[];
+  address: MultilingualText;
+  mapUrl: string;
+  image: string;
+  workingHours?: MultilingualText;
+  tipsForStudents?: MultilingualText;
+}
+
+export interface WeeklyBazaar {
+  id: string;
+  name: MultilingualText;
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  dayName: MultilingualText;
+  neighborhood: MultilingualText;
+  locationDetails: MultilingualText;
+  itemsSold: MultilingualText[];
+  hours: string;
+  mapUrl: string;
+  coordinates?: { lat: number; lng: number };
+  image?: string;
+  proximityToUniv?: MultilingualText;
+}
+
+export type DormitoryType = 'kyk' | 'private' | 'apart' | 'foundation';
+export type DormitoryGender = 'male' | 'female' | 'mixed';
+
+export interface StudentDormitory {
+  id: string;
+  name: MultilingualText;
+  type: DormitoryType;
+  typeLabel: MultilingualText;
+  gender: DormitoryGender;
+  genderLabel: MultilingualText;
+  neighborhood: MultilingualText;
+  address: MultilingualText;
+  description: MultilingualText;
+  features: MultilingualText[];
+  capacity?: string;
+  roomTypes?: MultilingualText;
+  servicesIncluded: MultilingualText[];
+  proximityToUniv: MultilingualText;
+  phone?: string;
+  mapUrl: string;
+  image: string;
+  applicationGuide?: MultilingualText;
+  isPopularForStudents?: boolean;
+}
+
+export type CityPlaceCategory =
+  | 'bazaars'
+  | 'cafes'
+  | 'districts'
+  | 'shopping'
+  | 'transport'
+  | 'services'
   | 'hospitals'
-  | 'bazaars';
+  | 'food';
 
 export interface CityPlace {
   id: string;
@@ -174,14 +228,14 @@ export interface CityPlace {
   category: CityPlaceCategory;
   description: MultilingualText;
   address: MultilingualText;
-  district: MultilingualText; // e.g. "Sahil / الكورنيش"
+  district: MultilingualText;
   googleMapsUrl: string;
   image: string;
   isPopularForStudents?: boolean;
-  studentTips?: MultilingualText; // نصائح وإرشادات خاصة بالطالب
+  studentTips?: MultilingualText;
   openingHours?: MultilingualText;
-  operatingDay?: MultilingualText; // يوم البازار الأسبوعي (e.g. "الإثنين" / "Pazartesi")
+  operatingDay?: MultilingualText;
   phone?: string;
-  features?: string[]; // e.g. ['wifi', 'study', 'budget', 'sea_view', 'bus_stop']
+  features?: string[];
 }
 

@@ -365,6 +365,77 @@ export const initialCourses: CourseItem[] = [
         ]
       }
     ]
+  },
+  {
+    id: "course-leadership",
+    title: {
+      ar: "دورة القيادة وإدارة الفرق - المنهج التدريبي المتكامل والحقيبة التدريبية",
+      tr: "Liderlik ve Takım Yönetimi Kursu - Kapsamlı Eğitim Seti ve Materyalleri"
+    },
+    faculty: {
+      ar: "مركز تطوير المهارات والقيادة الطلابية",
+      tr: "Liderlik ve Beceri Geliştirme Merkezi"
+    },
+    department: {
+      ar: "القيادة وإدارة الفرق",
+      tr: "Liderlik ve Takım Yönetimi"
+    },
+    category: {
+      ar: "تطوير القيادة والإدارة",
+      tr: "Liderlik ve Yönetim Becerileri"
+    },
+    description: {
+      ar: "حقيبة تدريبية متكاملة لبرنامج القيادة وإدارة فرق العمل الطلابية والتطوعية. تشمل الحقيبة استراتيجيات التخطيط وصناعة القرار، بناء فرق العمل وتوزيع الأدوار، حل النزاعات وإدارة الأزمات، والاتصال المؤسسي الفعال مع عروض تقديمية وملخصات تدريبية.",
+      tr: "Öğrenci ve gönüllü ekipler için liderlik ve takım yönetimi kapsamlı eğitim seti. Stratejik planlama ve karar alma, takım kurma ve rol dağılımı, kriz ve çatışma yönetimi ile kurumsal iletişim sunumları ve pratik uygulama rehberlerini içerir."
+    },
+    pdfUrl: "data:application/pdf;base64,JVBERi0xLjQKJ...",
+    pdfName: "Leadership_and_Team_Management_Guide_2026.pdf",
+    pdfFiles: [
+      {
+        id: "pdf-lead-1",
+        name: "Leadership_and_Team_Management_Guide_2026.pdf",
+        url: "data:application/pdf;base64,JVBERi0xLjQKJ...",
+        size: "3.8 MB",
+        type: "application/pdf"
+      },
+      {
+        id: "pdf-lead-2",
+        name: "Team_Dynamics_and_Conflict_Resolution.pdf",
+        url: "data:application/pdf;base64,JVBERi0xLjQKJ...",
+        size: "2.1 MB",
+        type: "application/pdf"
+      }
+    ],
+    videoUrl: "https://www.youtube.com/watch?v=fW8amMCVAJQ",
+    driveUrl: "https://drive.google.com/drive/folders/1lead-team-management-archive-2026",
+    dateAdded: "2026-06-28",
+    year: { ar: "دورة عامة", tr: "Genel Eğitim" },
+    semester: { ar: "فصل الصيف", tr: "Yaz Dönemi" },
+    driveFolders: [
+      {
+        id: "fl-lead-1",
+        name: {
+          ar: "📊 شرائح الحقيبة التدريبية والمحاضرات",
+          tr: "📊 Eğitim Sunumları ve Ders Slaytları"
+        },
+        files: [
+          { id: "fl-1-1", name: { ar: "الوحدة الأولى: صفات القائد الفعال ونظريات القيادة الحديثة", tr: "Modül 1: Etkili Liderlik Özellikleri ve Modern Liderlik Teorileri" }, type: "pdf", size: "3.5 MB", url: "#" },
+          { id: "fl-1-2", name: { ar: "الوحدة الثانية: مراحل بناء الفريق وتوزيع الأدوار (Tuckman Model)", tr: "Modül 2: Takım Oluşturma Aşamaları ve Rol Dağılımı" }, type: "pdf", size: "2.9 MB", url: "#" },
+          { id: "fl-1-3", name: { ar: "الوحدة الثالثة: إدارة النزاعات والتفاوض الإيجابي داخل الفريق", tr: "Modül 3: Takım İçi Çatışma Yönetimi ve Müzakere Teknikleri" }, type: "pdf", size: "4.2 MB", url: "#" }
+        ]
+      },
+      {
+        id: "fl-lead-2",
+        name: {
+          ar: "📋 أدوات التقييم العملي ونماذج التخطيط",
+          tr: "📋 Pratik Değerlendirme Araçları ve Planlama Şablonları"
+        },
+        files: [
+          { id: "fl-2-1", name: { ar: "نموذج خطة عمل المشروع وتوزيع المهام (Worksheet)", tr: "Proje Eylem Planı ve Görev Dağılım Şablonu" }, type: "pdf", size: "1.2 MB", url: "#" },
+          { id: "fl-2-2", name: { ar: "اختبار أنماط الشخصية القيادية وطرق التعامل معها", tr: "Liderlik Tarzı Değerlendirme Testi ve Analiz Rehberi" }, type: "pdf", size: "1.8 MB", url: "#" }
+        ]
+      }
+    ]
   }
 ];
 
@@ -436,6 +507,72 @@ export const initialActivities: ActivityItem[] = [
     registrations: []
   },
   {
+    id: "activity-leadership",
+    title: {
+      ar: "دورة القيادة وإدارة الفرق الطلابية - ورشة تدريبية معتمدة",
+      tr: "Öğrenci Liderliği ve Takım Yönetimi Eğitimi - Sertifikalı Çalıştay"
+    },
+    description: {
+      ar: "دورة تدريبية مكثفة ومعتمدة ينظمها تجمع الطلاب الفلسطينيين لتمكين الطلاب وتنمية مهاراتهم القيادية، وإدارة فرق العمل والمبادرات التطوعية بكفاءة عالية، وحل النزاعات، وإدارة الوقت والضغوط في بيئة العمل الجماعي. يقدم الدورة مدربون معتمدون، ويحصل المشاركون على شهادة إتمام رسمية.",
+      tr: "Filistin Öğrenci Topluluğu tarafından öğrencileri güçlendirmek, liderlik ve takım yönetimi becerilerini, gönüllü girişimleri ve kriz çözümünü yüksek verimlilikle yönetmeyi öğretmek amacıyla düzenlenen sertifikalı yoğun eğitim çalıştayı."
+    },
+    date: "2026-07-25",
+    time: "14:00 - 18:00",
+    location: {
+      ar: "المدرج المركزي الكبير - كلية الهندسة (الحرم الرئيسي)",
+      tr: "Büyük Merkezi Amfi - Mühendislik Fakültesi (Merkez Kampüs)"
+    },
+    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop&q=60",
+    registrationEnabled: true,
+    registeredCount: 32,
+    maxSeats: 80,
+    registrations: []
+  },
+  {
+    id: "activity-cv-interview",
+    title: {
+      ar: "ورشة إعداد السيرة الذاتية واجتياز مقابلات العمل الأكاديمية والمهنية",
+      tr: "CV Hazırlama ve Profesyonel Mülakat Teknikleri Çalıştayı"
+    },
+    description: {
+      ar: "ورشة عمل تفاعلية لمساعدة الطلاب والخريجين على صياغة سيرة ذاتية احترافية باللغتين الإنجليزية والتركية مطابقة لمعايير ATS، واكتساب مهارات الإقناع وإبراز نقاط القوة واجتياز المقابلات الشخصية بنجاح للتقديم على المنح وفرص العمل.",
+      tr: "Öğrencilere ve mezunlara yönelik, ATS standartlarına uygun İngilizce ve Türkçe profesyonel özgeçmiş hazırlama, mülakat teknikleri ve burs/iş başvurularında öne çıkma stratejilerini içeren etkileşimli çalıştay."
+    },
+    date: "2026-07-18",
+    time: "15:30 - 17:30",
+    location: {
+      ar: "قاعة السيمينار - مكتبة الجامعة المركزية",
+      tr: "Seminer Salonu - Merkez Kütüphane"
+    },
+    image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&auto=format&fit=crop&q=60",
+    registrationEnabled: true,
+    registeredCount: 24,
+    maxSeats: 60,
+    registrations: []
+  },
+  {
+    id: "activity-trip",
+    title: {
+      ar: "رحلة التجمع الاستكشافية السنوية لمعالم هاتاي وبحيرة غولباشي",
+      tr: "Topluluk Geleneksel Hatay Tarihi ve Gölbaşı Doğa Gezisi"
+    },
+    description: {
+      ar: "رحلة ترفيهية وثقافية تجمع طلاب التجمع لزيارة أهم المعالم التاريخية في هاتاي، مغارة وقناة تيتوس في صمنداغ، وشواطئ إسكندرون وبحيرة غولباشي الطبيعية لقضاء يوم ترفيهي مليء بالمسابقات والفعاليات الأخوية.",
+      tr: "Öğrencilerimizi bir araya getiren, Hatay'ın tarihi yerlerini, Titus Tünelini, İskenderun sahilini ve Gölbaşı Tabiat Parkı'nı kapsayan eğlenceli ve kültürel geleneksel bahar gezisi."
+    },
+    date: "2026-07-28",
+    time: "08:30 - 19:30",
+    location: {
+      ar: "نقطة الانطلاق: البوابة الرئيسية لجامعة إسكندرون التقنية",
+      tr: "Buluşma Noktası: İSTE Merkez Kampüs Ana Giriş Kapısı"
+    },
+    image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&auto=format&fit=crop&q=60",
+    registrationEnabled: true,
+    registeredCount: 52,
+    maxSeats: 90,
+    registrations: []
+  },
+  {
     id: "activity-past-1",
     title: {
       ar: "معرض التراث والثقافة الفلسطينية الأول",
@@ -478,6 +615,52 @@ export const initialActivities: ActivityItem[] = [
     registrationEnabled: false,
     registeredCount: 35,
     maxSeats: 40,
+    registrations: [],
+    isPast: true
+  },
+  {
+    id: "activity-past-iftar",
+    title: {
+      ar: "إفطار رمضان الجماعي السنوي لطلبة التجمع والجالية",
+      tr: "Geleneksel Topluluk Ramazan İftarı ve Kültür Buluşması"
+    },
+    description: {
+      ar: "أقام تجمع الطلاب الفلسطينيين مأدبة الإفطار الرمضاني السنوية المباركة لجمع شمل الطلاب الفلسطينيين والمغتربين في أجواء عائلية وأخوية مميزة، تخللها برامج ثقافية ومسابقات رمضانية وتوزيع هدايا تذكارية.",
+      tr: "Öğrenci topluluğumuz, Filistinli ve misafir öğrencileri kardeşlik atmosferinde bir araya getiren geleneksel iftar yemeğini düzenlemiş, iftar sonrası kültürel yarışmalar gerçekleştirilmiştir."
+    },
+    date: "2026-03-24",
+    time: "18:20 - 21:00",
+    location: {
+      ar: "قاعة المناسبات والمطعم المركزي بالجامعة",
+      tr: "Üniversite Merkezi Sosyal Tesisleri ve Yemekhanesi"
+    },
+    image: "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=800&auto=format&fit=crop&q=60",
+    registrationEnabled: false,
+    registeredCount: 115,
+    maxSeats: 120,
+    registrations: [],
+    isPast: true
+  },
+  {
+    id: "activity-past-chess",
+    title: {
+      ar: "بطولة التجمع لتنس الطاولة والشطرنج لعام 2026",
+      tr: "Masa Tenisi ve Satranç Turnuvası 2026"
+    },
+    description: {
+      ar: "اختتم تجمع الطلاب الفلسطينيين فعاليات البطولة الودية للشطرنج وتنس الطاولة والتي شارك فيها العشرات من طلبة الجامعة في أجواء حماسية وتنافسية راقية، وتم تتويج الفائزين بالمراكز الثلاثة الأولى.",
+      tr: "Öğrenci Topluluğumuz, kampüste onlarca öğrencinin katılımıyla dostluk ve centilmenlik içinde geçen satranç ve masa tenisi turnuvasını tamamlamış ve dereceye girenlere madalyalarını takdim etmiştir."
+    },
+    date: "2026-04-18",
+    time: "14:00 - 18:00",
+    location: {
+      ar: "الصالة المغلقة بالمدينة الرياضية للجامعة",
+      tr: "Üniversite Spor Kompleksi Kapalı Spor Salonu"
+    },
+    image: "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=800&auto=format&fit=crop&q=60",
+    registrationEnabled: false,
+    registeredCount: 32,
+    maxSeats: 32,
     registrations: [],
     isPast: true
   }
@@ -1348,7 +1531,7 @@ export const initialCityPlaces: CityPlace[] = [
       ar: "تشانكايا (Çankaya)",
       tr: "Çankaya Mah."
     },
-    googleMapsUrl: "https://maps.google.com/?q=Cankaya+Pazari+Iskenderun",
+    googleMapsUrl: "https://www.google.com/maps?q=36.56842,36.17724+(Cankaya+Pazartesi+Pazari+Iskenderun)",
     image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&auto=format&fit=crop&q=65",
     isPopularForStudents: true,
     studentTips: {
@@ -1384,7 +1567,7 @@ export const initialCityPlaces: CityPlace[] = [
       ar: "بارباروس (Barbaros)",
       tr: "Barbaros Mah."
     },
-    googleMapsUrl: "https://maps.google.com/?q=Barbaros+Pazari+Iskenderun",
+    googleMapsUrl: "https://www.google.com/maps?q=36.59124,36.18341+(Barbaros+Sali+Pazari+Iskenderun)",
     image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=65",
     isPopularForStudents: true,
     studentTips: {
@@ -1420,7 +1603,7 @@ export const initialCityPlaces: CityPlace[] = [
       ar: "ساكاريا (Sakarya)",
       tr: "Sakarya Mah."
     },
-    googleMapsUrl: "https://maps.google.com/?q=Sakarya+Kapali+Pazar+Iskenderun",
+    googleMapsUrl: "https://www.google.com/maps?q=36.58285,36.16642+(Sakarya+Ismet+Inonu+Carsamba+Pazari)",
     image: "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=600&auto=format&fit=crop&q=65",
     isPopularForStudents: true,
     studentTips: {
@@ -1456,7 +1639,7 @@ export const initialCityPlaces: CityPlace[] = [
       ar: "نُمونة / باتش (Numune)",
       tr: "Numune Mah."
     },
-    googleMapsUrl: "https://maps.google.com/?q=Numune+Persembe+Pazari+Iskenderun",
+    googleMapsUrl: "https://www.google.com/maps?q=36.58622,36.16105+(Numune+Persembe+Pazari+Iskenderun)",
     image: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?w=600&auto=format&fit=crop&q=65",
     isPopularForStudents: true,
     studentTips: {
@@ -1492,7 +1675,7 @@ export const initialCityPlaces: CityPlace[] = [
       ar: "مودرن إفلر (Modernevler)",
       tr: "Modernevler Mah."
     },
-    googleMapsUrl: "https://maps.google.com/?q=Modernevler+Kapali+Pazari+Iskenderun",
+    googleMapsUrl: "https://www.google.com/maps?q=36.59154,36.16952+(Cay+Eski+Hal+Cuma+Koy+Pazari)",
     image: "https://images.unsplash.com/photo-1506484381205-f7945653044d?w=600&auto=format&fit=crop&q=65",
     isPopularForStudents: true,
     studentTips: {
@@ -1528,7 +1711,7 @@ export const initialCityPlaces: CityPlace[] = [
       ar: "مصطفى كمال (Mustafa Kemal)",
       tr: "Mustafa Kemal Mah."
     },
-    googleMapsUrl: "https://maps.google.com/?q=Mustafa+Kemal+Pazari+Iskenderun",
+    googleMapsUrl: "https://www.google.com/maps?q=36.57463,36.15584+(Mustafa+Kemal+Cumartesi+Halk+Pazari)",
     image: "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&auto=format&fit=crop&q=65",
     isPopularForStudents: true,
     studentTips: {
@@ -1564,7 +1747,7 @@ export const initialCityPlaces: CityPlace[] = [
       ar: "إسنتيبي (Esentepe)",
       tr: "Esentepe Mah."
     },
-    googleMapsUrl: "https://maps.google.com/?q=Esentepe+Pazari+Iskenderun",
+    googleMapsUrl: "https://www.google.com/maps?q=36.56455,36.16523+(Esentepe+Dumlupinar+Pazar+Pazari)",
     image: "https://images.unsplash.com/photo-1543083477-4f785aeafaa9?w=600&auto=format&fit=crop&q=65",
     isPopularForStudents: true,
     studentTips: {

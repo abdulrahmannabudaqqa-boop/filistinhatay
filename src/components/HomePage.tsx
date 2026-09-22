@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { NewsItem, ActivityItem, ImportantLink } from '../types';
 import { 
   ArrowRight, Newspaper, Calendar, Link2, BookOpen, 
-  Users, Award, ShieldAlert, GraduationCap, ArrowUpRight, Sparkles 
+  Users, Award, ShieldAlert, GraduationCap, ArrowUpRight, Sparkles, Compass, MapPin, Building 
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -98,6 +98,22 @@ export const HomePage: React.FC<HomePageProps> = ({ news, activities, links, set
               className="flex items-center gap-2 px-6 py-3 bg-slate-900/80 hover:bg-slate-850 hover:border-amber-500/50 text-slate-100 font-extrabold text-xs sm:text-sm rounded-xl border border-slate-800 transition duration-200 backdrop-blur-sm"
             >
               <span>{t('university')}</span>
+            </button>
+            <button
+              id="hero-explore-dormitories-btn"
+              onClick={() => setCurrentTab('dormitories')}
+              className="flex items-center gap-2 px-6 py-3 bg-burgundy-900 hover:bg-burgundy-950 text-white font-extrabold text-xs sm:text-sm rounded-xl border border-red-500/40 transition duration-200 shadow-md cursor-pointer"
+            >
+              <Building className="w-4 h-4 text-amber-300" />
+              <span>{language === 'ar' ? 'السكنات الطلابية (KYK)' : 'Öğrenci Yurtları (KYK)'}</span>
+            </button>
+            <button
+              id="hero-explore-iskenderun-btn"
+              onClick={() => setCurrentTab('iskenderun')}
+              className="flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs sm:text-sm rounded-xl transition duration-200 shadow-md cursor-pointer"
+            >
+              <MapPin className="w-4 h-4 text-slate-950" />
+              <span>{language === 'ar' ? 'معالم وبازارات إسكندرون' : 'İskenderun & Pazarlar'}</span>
             </button>
           </div>
         </div>
@@ -222,6 +238,71 @@ export const HomePage: React.FC<HomePageProps> = ({ news, activities, links, set
           </div>
         )}
 
+      </div>
+
+      {/* Iskenderun & Dormitories Dual Guide Banners */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Dormitories Banner */}
+        <div 
+          id="home-dormitories-guide-banner"
+          onClick={() => setCurrentTab('dormitories')}
+          className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-red-950 via-slate-900 to-burgundy-950 text-white border-2 border-red-500/30 shadow-md hover:shadow-xl transition duration-300 cursor-pointer flex flex-col justify-between gap-5 group relative overflow-hidden"
+        >
+          <div className="space-y-2.5 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-amber-300 text-xs font-extrabold">
+              <Building className="w-3.5 h-3.5" />
+              <span>{language === 'ar' ? 'سكنات KYK وشقق الطلاب' : 'KYK & Öğrenci Apartları'}</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-extrabold text-white group-hover:text-amber-300 transition-colors leading-snug">
+              {language === 'ar' ? 'دليل السكنات الطلابية وأماكنها في إسكندرون' : 'İskenderun Öğrenci Yurtları ve Barınma Rehberi'}
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed text-justify">
+              {language === 'ar'
+                ? 'تعرف على سكنات KYK للذكور والإناث (سكن ميدان، سكن 5 تموز، وغيرها) الأقرب للجامعة، وشقق أبارت حي مصطفى كمال، مع مواقع Google Maps وخطوات التقديم وتثبيت النفوس.'
+                : 'İSTE Merkez kampüsüne en yakın KYK yurtları, kız-erkek blokları, eşyalı öğrenci apartları ve e-Devlet başvuru rehberi.'}
+            </p>
+          </div>
+
+          <div className="relative z-10 pt-2 flex items-center justify-between border-t border-white/10">
+            <span className="text-xs text-amber-400 font-extrabold flex items-center gap-1.5">
+              <span>{language === 'ar' ? 'استعراض السكنات والمواقع' : 'Yurtları ve Konumları İncele'}</span>
+            </span>
+            <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-amber-400 group-hover:text-slate-950 transition">
+              <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            </span>
+          </div>
+        </div>
+
+        {/* Iskenderun Guide & Weekly Bazaars Callout Banner */}
+        <div 
+          id="home-iskenderun-guide-banner"
+          onClick={() => setCurrentTab('iskenderun')}
+          className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-burgundy-950 via-slate-900 to-amber-950 text-white border-2 border-amber-500/30 shadow-md hover:shadow-xl transition duration-300 cursor-pointer flex flex-col justify-between gap-5 group relative overflow-hidden"
+        >
+          <div className="space-y-2.5 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-extrabold">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{language === 'ar' ? 'معالم وبازارات المدينة' : 'Şehir ve Pazar Rehberi'}</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-extrabold text-white group-hover:text-amber-400 transition-colors leading-snug">
+              {language === 'ar' ? 'دليل معالم وبازارات مدينة إسكندرون' : 'İskenderun Gezi Rehberi ve Semt Pazarları'}
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed text-justify">
+              {language === 'ar'
+                ? 'استكشف أهم الحدائق، الكورنيش، المتاحف، والمواقع التاريخية في إسكندرون مع روابط خرائط Google الدقيقة، بالإضافة إلى جدول ومواقع الأسواق الشعبية (البازارات) على مدار أيام الأسبوع.'
+                : 'İskenderun\'un simge mekanları ile haftalık taze ve uygun fiyatlı semt pazarlarının konum ve günleri.'}
+            </p>
+          </div>
+
+          <div className="relative z-10 pt-2 flex items-center justify-between border-t border-white/10">
+            <span className="text-xs text-amber-400 font-extrabold flex items-center gap-1.5">
+              <span>{language === 'ar' ? 'استعراض المعالم والبازارات' : 'Mekanları ve Pazarları İncele'}</span>
+            </span>
+            <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-amber-400 group-hover:text-slate-950 transition">
+              <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Quick Access Portals Grid */}
