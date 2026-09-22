@@ -1,4 +1,4 @@
-import { NewsItem, CourseItem, ActivityItem, ImportantLink, UniversityInfo, TopAnnouncement, DeptAnnouncementItem, UniversityNewsItem, DirectoryMember } from '../types';
+import { NewsItem, CourseItem, ActivityItem, ImportantLink, UniversityInfo, TopAnnouncement, DeptAnnouncementItem, UniversityNewsItem, DirectoryMember, CityPlace } from '../types';
 
 export const initialNews: NewsItem[] = [
   {
@@ -773,5 +773,808 @@ export const initialDirectoryMembers: DirectoryMember[] = [
       ar: "مهتم بالأنظمة السحابية والذكاء الاصطناعي، ومسؤول عن تنسيق أنشطة التجمع والربط الأكاديمي مع الجامعة.",
       tr: "Bulut sistemleri ve yapay zeka ile ilgileniyor, topluluk etkinlikleri ve üniversite ile akademik koordinasyondan sorumlu."
     }
+  }
+];
+
+export const initialCityPlaces: CityPlace[] = [
+  {
+    id: "place-1",
+    name: {
+      ar: "إسبريسو لاب إسكندرون (على الكورنيش)",
+      tr: "Espressolab İskenderun Sahil"
+    },
+    category: "cafes",
+    description: {
+      ar: "أحد أشهر المقاهي الحديثة والمفضلة للطلاب للدراسة الفردية والجماعية، يوفر قاعات مريحة، جلسات هادئة، مقابس شحن وفيرة، وإطلالة مباشرة على بحر إسكندرون.",
+      tr: "Öğrencilerin bireysel ve grup çalışmaları için en çok tercih ettiği modern kahve zinciri. Geniş çalışma masaları, bol priz, sessiz alanlar ve sahil manzarası sunar."
+    },
+    address: {
+      ar: "شارع أتاتورك بولفار، الكورنيش البحري، إسكندرون / هاتاي",
+      tr: "Atatürk Bulvarı Sahil Kordonu, İskenderun / Hatay"
+    },
+    district: {
+      ar: "الكورنيش البحري (Sahil)",
+      tr: "Sahil Kordonu"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Espressolab+Iskenderun",
+    image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "تتوفر مقابس شحن في معظم الطاولات بالدور العلوي، والإنترنت سريع وممتاز للتحضير للامتحانات أو العمل على مشاريع التخرج.",
+      tr: "Üst kattaki çoğu masada priz mevcuttur. Hızlı Wi-Fi ve sınav hazırlıkları için ideal ferah ortam."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 01:00 ليلاً",
+      tr: "08:00 - 01:00"
+    },
+    phone: "+90 326 614 00 00",
+    features: ["wifi", "study", "sea_view", "open_late"]
+  },
+  {
+    id: "place-2",
+    name: {
+      ar: "المكتبة المركزية وصالات الاستذكار بحرم الجامعة (İSTE)",
+      tr: "İSTE Kampüs Merkez Kütüphanesi & Çalışma Alanları"
+    },
+    category: "cafes",
+    description: {
+      ar: "المكتبة الأكاديمية الرئيسية داخل الحرم الجامعي المركزي، تضم مئات الآلاف من المراجع والكتب وصالات المطالعة الفردية والجماعية المكيفة.",
+      tr: "Merkez kampüs içerisindeki ana akademik kütüphane. Yüz binlerce kaynak, bireysel ve grup çalışma salonları ve klimalı ortam sunar."
+    },
+    address: {
+      ar: "الحرم الجامعي المركزي لجامعة إسكندرون التقنية (İSTE Merkez Kampüs)",
+      tr: "İskenderun Teknik Üniversitesi Merkez Kampüsü, İskenderun / Hatay"
+    },
+    district: {
+      ar: "حرم الجامعة المركزي (Kampüs)",
+      tr: "Merkez Kampüs"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Iskenderun+Teknik+Universitesi+Merkez+Kutuphanesi",
+    image: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "الدخول ببطاقة الطالب الجامعية مجاناً. شبكة الإنترنت سريعة (Eduroam)، وتفتح خلال فترات الامتحانات الرسمية طوال 24 ساعة مع تقديم شاي وضيافة.",
+      tr: "Öğrenci kimliğiyle ücretsiz giriş yapılır. Eduroam hızlı interneti mevcuttur ve vize/final haftalarında 24 saat açıktır."
+    },
+    openingHours: {
+      ar: "08:30 - 22:00 (و 24 ساعة أيام الامتحانات)",
+      tr: "08:30 - 22:00 (Sınav haftalarında 7/24)"
+    },
+    features: ["wifi", "study", "budget"]
+  },
+  {
+    id: "place-3",
+    name: {
+      ar: "ديفيد بيبول كافيه وطعام (David People)",
+      tr: "David People Coffee & Food İskenderun"
+    },
+    category: "cafes",
+    description: {
+      ar: "مقهى ومطعم واسع يجمع بين الأجواء الاجتماعية الراقية والجلسات المريحة لتناول القهوة والوجبات الخفيفة والاجتماعات الطلابية.",
+      tr: "Geniş iç ve bahçe alanı, kaliteli kahve çeşitleri ve zengin yemek menüsüyle öğrencilerin uğrak mekanı."
+    },
+    address: {
+      ar: "شارع الكورنيش، مقابل الممشى البحري، إسكندرون",
+      tr: "Sahil Kordonu Caddesi, İskenderun / Hatay"
+    },
+    district: {
+      ar: "الكورنيش (Sahil)",
+      tr: "Sahil"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=David+People+Iskenderun",
+    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "مكان ملائم جداً للقاءات فرق العمل والمشاريع الطلابية أو أخذ استراحة مميزة بعد أسبوع دراسي حافل.",
+      tr: "Grup proje toplantıları ve sahil havası eşliğinde mola vermek için çok uygundur."
+    },
+    openingHours: {
+      ar: "09:00 صباحاً - 00:00 منتصف الليل",
+      tr: "09:00 - 00:00"
+    },
+    features: ["wifi", "study", "sea_view", "food"]
+  },
+  {
+    id: "place-4",
+    name: {
+      ar: "ستاربكس إسكندرون الكورنيش (Starbucks Sahil)",
+      tr: "Starbucks İskenderun Sahil"
+    },
+    category: "cafes",
+    description: {
+      ar: "فرع ستاربكس المطل مباشرة على البحر ومارينا إسكندرون، يوفر جلسات خارجية في الهواء الطلق ومكان مفضل لشرب القهوة ومراجعة الدروس.",
+      tr: "İskenderun Marinası ve deniz kenarında yer alan, açık hava oturma alanlarına sahip popüler kahve zinciri."
+    },
+    address: {
+      ar: "أتاتورك بولفار، مقابل رصيف الميناء، إسكندرون",
+      tr: "Atatürk Bulvarı Sahil, İskenderun / Hatay"
+    },
+    district: {
+      ar: "الكورنيش (Sahil)",
+      tr: "Sahil"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Starbucks+Iskenderun+Sahil",
+    image: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "في فترات الصباح الباكر تكون الأجواء هادئة للغاية ومثالية للقراءة مع نسيم البحر المنعش.",
+      tr: "Sabah saatlerinde oldukça sakin olup deniz esintisi eşliğinde ders çalışmak için çok keyiflidir."
+    },
+    openingHours: {
+      ar: "07:30 صباحاً - 01:00 ليلاً",
+      tr: "07:30 - 01:00"
+    },
+    features: ["wifi", "sea_view", "open_late"]
+  },
+  {
+    id: "place-5",
+    name: {
+      ar: "كورنيش إسكندرون البحري وممشى النخيل (Sahil Kordonu)",
+      tr: "İskenderun Sahil Kordonu & Atatürk Anıt Alanı"
+    },
+    category: "districts",
+    description: {
+      ar: "أطول وأجمل ممشى بحري في منطقة هاتاي، متصل بحدائق عامة وملاعب ومسارات للدراجات الهوائية ومقاعد استراحة، ويعد المتنفس الأول لطلاب الجامعة.",
+      tr: "Bölgenin en uzun ve güzel sahil bandı. Bisiklet yolları, yeşil parklar, anıt meydanı ve kafeleriyle kentin kalbi."
+    },
+    address: {
+      ar: "طريق الساحل الممتد من الميناء حتى كارا آغاتش، إسكندرون",
+      tr: "Sahil Şeridi, İskenderun / Hatay"
+    },
+    district: {
+      ar: "الكورنيش البحري (Sahil)",
+      tr: "Sahil Kordonu"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Iskenderun+Sahil+Kordonu",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "يمكنك استئجار دراجة هوائية أو السير على الأقدام لمشاهدة غروب الشمس الرائع خلف جبال الأمانوس، ومكان رائع لتفريغ طاقة الدراسة.",
+      tr: "Bisiklet kiralayabilir, gün batımını seyredebilir veya arkadaşlarınızla çimlerde oturarak dinlenebilirsiniz."
+    },
+    openingHours: {
+      ar: "مفتوح 24 ساعة طوال الأسبوع (عام ومجاني)",
+      tr: "7/24 Açık (Halka Açık)"
+    },
+    features: ["sea_view", "budget", "open_late"]
+  },
+  {
+    id: "place-6",
+    name: {
+      ar: "شارع شهيد بامير وسوق إسكندرون التجاري (Şehit Pamir)",
+      tr: "Şehit Pamir Caddesi & Çarşı Merkezi"
+    },
+    category: "districts",
+    description: {
+      ar: "الشارع الرئيسي النابض لوسط إسكندرون، يحتوي على فروع كبرى البنوك التركية، ومراكز الاتصالات (Turkcell, Vodafone, Telekom)، ومحلات الصرافة والملابس والقرطاسيات.",
+      tr: "İskenderun şehir merkezinin ana arteri. Tüm banka şubeleri, operatör bayileri, döviz büroları ve kırtasiyeler bu caddededir."
+    },
+    address: {
+      ar: "شارع شهيد بامير، وسط مدينة إسكندرون",
+      tr: "Şehit Pamir Caddesi, İskenderun / Hatay"
+    },
+    district: {
+      ar: "وسط البلد (Çarşı / Merkez)",
+      tr: "Şehir Merkezi"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Sehit+Pamir+Caddesi+Iskenderun",
+    image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "إذا أردت استخراج خط هاتف تركي، فتح حساب بنكي (Ziraat / Vakıfbank / İş Bankası)، أو طباعة وتصوير أوراق جامعية، فهذا هو المكان الأساسي.",
+      tr: "Banka hesabı açma, öğrenci hattı çıkarma ve ucuz fotokopi çekimi için gidilecek merkez caddedir."
+    },
+    openingHours: {
+      ar: "المحلات من 09:00 - 21:00",
+      tr: "Mağazalar: 09:00 - 21:00"
+    },
+    features: ["shopping", "budget"]
+  },
+  {
+    id: "place-7",
+    name: {
+      ar: "مركز تسوق بارك فوربس (Park Forbes AVM)",
+      tr: "Park Forbes Alışveriş Merkezi"
+    },
+    category: "shopping",
+    description: {
+      ar: "أحدث وأكبر مول تجاري مغلق في إسكندرون بإطلالة بحرية، يحتوي على سينما Cinemaximum، ومتاجر أزياء وإلكترونيات عالمية ومحلية، وساحة مطاعم سريعة ومقاهي.",
+      tr: "İskenderun'un deniz kenarındaki en modern AVM'si. Sinema salonları, eğlence alanları, ünlü giyim markaları ve zengin yemek katı mevcuttur."
+    },
+    address: {
+      ar: "تشاي محلسي، بجانب فندق الهيلتون ومرفأ إسكندرون",
+      tr: "Çay Mah., Sahil Kordonu / Liman Yanı, İskenderun / Hatay"
+    },
+    district: {
+      ar: "الكورنيش / الميناء",
+      tr: "Sahil / Liman"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Park+Forbes+AVM+Iskenderun",
+    image: "https://images.unsplash.com/photo-1567449303078-57ad995bd302?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "تمر باصات الدولموش القادمة من الجامعة بجانبه مباشرة. ممتاز للتسوق في الشتاء أو الصيف الحار بفضل التكييف المركزي.",
+      tr: "Kampüs dolmuşları hemen önünden geçer. Sinema günlerinde öğrenci indirimleri mevcuttur."
+    },
+    openingHours: {
+      ar: "10:00 صباحاً - 22:00 مساءً",
+      tr: "10:00 - 22:00"
+    },
+    phone: "+90 326 618 80 80",
+    features: ["shopping", "food", "sea_view", "wifi"]
+  },
+  {
+    id: "place-8",
+    name: {
+      ar: "مركز تسوق برايم مول إسكندرون (Primemall AVM)",
+      tr: "Primemall İskenderun AVM"
+    },
+    category: "shopping",
+    description: {
+      ar: "مركز تسوق واسع يضم هايبرماركت كارفور ومتاجر ملابس ومستلزمات منزلية وإلكترونيات تناسب احتياجات تجهيز الشقق والسكن الطلابي.",
+      tr: "CarrefourSA, TeknoSA ve çeşitli giyim mağazalarıyla öğrencilerin ev eşyası ve genel alışveriş ihtiyaçlarına hitap eden AVM."
+    },
+    address: {
+      ar: "حي نُمونة، شارع إبراهيم كارا أوغلان أوغلو، رقم 29/3، إسكندرون / هاتاي",
+      tr: "Numune Mah., İbrahim Karaoğlanoğlu Cad. No:29/3, İskenderun / Hatay"
+    },
+    district: {
+      ar: "حي نُمونة (Numune)",
+      tr: "Numune Mahallesi"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Primemall+Iskenderun",
+    image: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: false,
+    studentTips: {
+      ar: "ممتاز لشراء أدوات المطبخ والمفروشات الخفيفة عند الانتقال لسكن جديد بفضل عروض كارفور المستمرة.",
+      tr: "Yeni eve çıkan öğrenciler için mutfak gereçleri ve nevresim takımlarında uygun fırsatlar bulunur."
+    },
+    openingHours: {
+      ar: "10:00 صباحاً - 22:00 مساءً",
+      tr: "10:00 - 22:00"
+    },
+    features: ["shopping", "food", "wifi"]
+  },
+  {
+    id: "place-9",
+    name: {
+      ar: "مركز استخراج وتعبئة كارت المواصلات الطلابي (Hatay Kart)",
+      tr: "Hatay Kart Başvuru & Kart Basım Merkezi"
+    },
+    category: "transport",
+    description: {
+      ar: "المكتب الرسمي التابع لبلدية هاتاي الكبرى لإصدار بطاقة المواصلات الطلابية المخفضة (İndirimli Öğrenci Kartı) التي تمنح حسماً كبيراً على باصات النقل العام.",
+      tr: "Hatay Büyükşehir Belediyesi toplu taşıma araçlarında geçerli indirimli öğrenci kartı basım ve vizeleme merkezi."
+    },
+    address: {
+      ar: "فرع كراج الحافلات (الأوتوجار) وفرع شارع 5 تموز (بجانب البلدية القديمة)، إسكندرون",
+      tr: "İskenderun Otogarı Ofisi & Çay Mah., 5 Temmuz Cad. (Eski Kaymakamlık Yanı), İskenderun / Hatay"
+    },
+    district: {
+      ar: "كراج السفر / وسط البلد",
+      tr: "Otogar & Çarşı"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Hatay+Kart+Iskenderun",
+    image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "الأوراق المطلوبة: وثيقة طالب حديثة (Öğrenci Belgesi)، صورة شخصية، وبطاقة الإقامة أو الكيملك. يستغرق استخراج الكارت 3 دقائق فقط!",
+      tr: "Gerekli evraklar: Öğrenci Belgesi (e-Devlet çıktısı), 1 adet vesikalık fotoğraf ve kimlik kartı. Kartınız birkaç dakikada teslim edilir."
+    },
+    openingHours: {
+      ar: "08:30 - 17:00 (الاثنين - الجمعة)",
+      tr: "08:30 - 17:00 (Hafta İçi)"
+    },
+    features: ["budget", "bus_stop"]
+  },
+  {
+    id: "place-10",
+    name: {
+      ar: "كراج حافلات السفر بين المدن (أوتوجار إسكندرون)",
+      tr: "İskenderun Şehirlerarası Otobüs Terminali (Otogar)"
+    },
+    category: "transport",
+    description: {
+      ar: "المحطة المركزية التي تنطلق منها شركات الحافلات الكبرى (Kamil Koç, Metro, Pamukkale, Has Turizm, Jet Turizm) نحو كافة المدن التركية ورحلات أنطاكيا.",
+      tr: "Türkiye'nin dört bir yanına sefer düzenleyen otobüs firmalarının ana kalkış terminali."
+    },
+    address: {
+      ar: "حي دوملوبينار، شارع 312 رقم 7، إسكندرون / هاتاي",
+      tr: "Dumlupınar Mah., 312. Sokak No:7, İskenderun / Hatay"
+    },
+    district: {
+      ar: "دوملوبينار (Dumlupınar)",
+      tr: "Dumlupınar Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Iskenderun+Otogari",
+    image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "للسفر إلى مركز أنطاكيا، تنطلق ميني باصات سريعة من الأوتوجار كل 15-20 دقيقة طوال اليوم بأسعار رخيصة جداً.",
+      tr: "Antakya merkeze gitmek için terminalden her 15-20 dakikada bir düzenli minibüs seferleri kalkmaktadır."
+    },
+    openingHours: {
+      ar: "مفتوح 24 ساعة يومياً",
+      tr: "7/24 Açık"
+    },
+    features: ["bus_stop", "open_late"]
+  },
+  {
+    id: "place-11",
+    name: {
+      ar: "محطة قطار إسكندرون التاريخية (TCDD Gar)",
+      tr: "TCDD İskenderun Tren Garı"
+    },
+    category: "transport",
+    description: {
+      ar: "محطة القطار التاريخية التابعة للسكك الحديدية التركية، توفر رحلات قطار يومية منتظمة ورخيصة جداً ومريحة للطلاب بين إسكندرون ودورت يول وعثمانية وأضنة ومرسين.",
+      tr: "İskenderun - Dörtyol - Osmaniye - Adana - Mersin güzergahında her gün çok ucuz ve konforlu bölgesel tren seferleri düzenleyen istasyon."
+    },
+    address: {
+      ar: "حي سافاش، شارع المحطة مع شارع أتاتورك، إسكندرون / هاتاي",
+      tr: "Savaş Mah., İstasyon Meydanı & Atatürk Cad., İskenderun / Hatay"
+    },
+    district: {
+      ar: "ميدان المحطة (İstasyon)",
+      tr: "İstasyon Meydanı"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Iskenderun+Tren+Gari",
+    image: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "تذكرة القطار للطلاب أقل من نصف سعر باص السفر! وهي أفضل وأوفر وسيلة للذهاب إلى أضنة أو التسوق في مرسين.",
+      tr: "Öğrencilere yaklaşık %50 indirim uygulanır. Adana ve Mersin'e gitmenin en ekonomik ve rahat yoludur."
+    },
+    openingHours: {
+      ar: "06:00 صباحاً - 20:00 مساءً",
+      tr: "06:00 - 20:00"
+    },
+    features: ["budget", "sightseeing"]
+  },
+  {
+    id: "place-12",
+    name: {
+      ar: "مديرية إدارة الهجرة - مكتب إسكندرون (Göç İdaresi)",
+      tr: "Hatay İl Göç İdaresi İskenderun Çalışma Grubu"
+    },
+    category: "services",
+    description: {
+      ar: "المكتب الرسمي الحكومي المختص بمعاملات شؤون الطلاب الأجانب، استلام ملفات الإقامة الطلابية لأول مرة أو التجديد، أخذ البصمات، وتحديث البيانات.",
+      tr: "Yabancı öğrencilerin ikamet izni (öğrenci ikameti) dosya teslimi, parmak izi ve kayıt işlemlerinin yapıldığı resmi merci."
+    },
+    address: {
+      ar: "حي دنيزجيلار، شارع أتاتورك 1، إسكندرون / هاتاي (هاتف: 03266456085)",
+      tr: "Denizciler Mah., Atatürk 1 Caddesi, İskenderun / Hatay (Tel: +90 326 645 60 85)"
+    },
+    district: {
+      ar: "دنيزجيلار (Denizciler)",
+      tr: "Denizciler Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Hatay+Goc+Idaresi+Iskenderun",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "تأكد من حجز الموعد عبر موقع e-ikamet.goc.gov.tr وتجهيز استمارة الموعد موقعة، وثيقة الطالب، التأمين الصحي، وصور بيومترية قبل الذهاب.",
+      tr: "Randevu belgesi, öğrenci belgesi, geçerli sağlık sigortası ve biyometrik fotoğrafla randevu saatinizde gidiniz."
+    },
+    openingHours: {
+      ar: "08:30 - 17:00 (الاثنين إلى الجمعة)",
+      tr: "08:30 - 17:00 (Hafta İçi)"
+    },
+    features: ["services"]
+  },
+  {
+    id: "place-13",
+    name: {
+      ar: "مديرية النفوس لتثبيت السكن والبيانات (Nüfus Müdürlüğü)",
+      tr: "İskenderun İlçe Nüfus Müdürlüğü"
+    },
+    category: "services",
+    description: {
+      ar: "دائرة النفوس الرسمية المسؤولة عن تثبيت عنوان السكن الفعلي للطالب (Adres Kaydı / Tescili) في سجلات الدولة التركية ونظام الـ e-Devlet وهو شرط لتجديد الإقامة.",
+      tr: "Öğrencilerin ikamet adreslerini (yurt veya ev) MERNIS sistemine ve e-Devlet'e tescil ettirdiği nüfus müdürlüğü."
+    },
+    address: {
+      ar: "حي سافاش، شارع أتاتورك بولفار رقم 45 (مبنى القائممقامية)، إسكندرون / هاتاي",
+      tr: "Savaş Mah., Atatürk Bulvarı No:45 (Kaymakamlık Hizmet Binası), İskenderun / Hatay"
+    },
+    district: {
+      ar: "وسط البلد (Savaş Mah.)",
+      tr: "Savaş Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Iskenderun+Ilce+Nufus+Mudurlugu",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "إذا كنت تسكن في سكن جامعي (KYK أو سكن خاص)، اطلب وثيقة إثبات سكن من إدارة السكن. أما إن كنت مستأجراً لشقة، فاحضر عقد الإيجار الموثق عند النوتر وفاتورة باسمك.",
+      tr: "Yurtta kalıyorsanız yurt müdürlüğünden barınma belgesi, evde kalıyorsanız noter onaylı kira sözleşmesi ve adınıza fatura ile başvurunuz."
+    },
+    openingHours: {
+      ar: "08:30 - 17:00 (أيام الدوام الرسمي)",
+      tr: "08:30 - 17:00 (Hafta İçi)"
+    },
+    features: ["services"]
+  },
+  {
+    id: "place-14",
+    name: {
+      ar: "مكتب البريد المركزي التركي (PTT Merkez)",
+      tr: "PTT İskenderun Merkez Müdürlüğü"
+    },
+    category: "services",
+    description: {
+      ar: "المكتب الرئيسي لشركة البريد التركي PTT في إسكندرون؛ يقدم خدمات إصدار كلمة مرور بوابة الحكومة الإلكترونية (e-Devlet)، واستلام الطرود البريدية، والتحويلات.",
+      tr: "e-Devlet şifresi alımı, kargo teslimi ve resmi tebligat işlemleri için İskenderun PTT ana şubesi."
+    },
+    address: {
+      ar: "حي بارباروس، شارع إبراهيم كارا أوغلان أوغلو رقم 4، إسكندرون / هاتاي",
+      tr: "Barbaros Mah., İbrahim Karaoğlanoğlu Cad. No:4, İskenderun / Hatay"
+    },
+    district: {
+      ar: "بارباروس (Barbaros)",
+      tr: "Barbaros Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=PTT+Iskenderun+Merkez",
+    image: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "فور استلامك لبطاقة الإقامة (Kimlik)، توجه للـ PTT وأبرز الكيملك للموظف وسيعطيك شفرة e-Devlet في ظرف مغلق فوراً مقابل رسوم رمزية (حوالي 10-20 ليرة).",
+      tr: "İkamet kartınızla PTT'ye giderek birkaç lira karşılığında anında e-Devlet şifrenizi temin edebilirsiniz."
+    },
+    openingHours: {
+      ar: "08:30 - 17:00 (الاثنين إلى الجمعة)",
+      tr: "08:30 - 17:00 (Hafta İçi)"
+    },
+    features: ["services", "budget"]
+  },
+  {
+    id: "place-15",
+    name: {
+      ar: "مشفى إسكندرون الحكومي العام (Devlet Hastanesi)",
+      tr: "İskenderun Devlet Hastanesi (Yeni Bina)"
+    },
+    category: "hospitals",
+    description: {
+      ar: "المشفى الحكومي التخصصي الأكبر في إسكندرون، يقدم خدمات الطوارئ على مدار 24 ساعة وكافة العيادات الاستشارية والتحاليل والأشعة المشمولة بالتأمين الصحي للطلاب (GSS).",
+      tr: "Yabancı öğrenci genel sağlık sigortası kapsamında poliklinik muayenesi ve 7/24 acil servis hizmeti veren ana devlet hastanesi."
+    },
+    address: {
+      ar: "حي نُمونة، شارع 903 رقم 31A (قرب شارع الدكتور صادق أحمد)، إسكندرون / هاتاي",
+      tr: "Numune Mah., 903. Sokak No:31A (Dr. Sadık Ahmet Cad. Civarı), İskenderun / Hatay"
+    },
+    district: {
+      ar: "نُمونة (Numune)",
+      tr: "Numune Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Iskenderun+Devlet+Hastanesi",
+    image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "لزيارة العيادات نهاراً، خذ موعداً مسبقاً عبر تطبيق MHRS أو اتصل بالرقم 182. وفي الحالات الإسعافية العاجلة توجه مباشرة لقسم الطوارئ (Acil Servis).",
+      tr: "Poliklinik için MHRS uygulamasından veya 182'den randevu alabilirsiniz. Acil durumlarda doğrudan acil servise başvurunuz."
+    },
+    openingHours: {
+      ar: "الطوارئ 24/7 طوال الأسبوع، والعيادات نهاراً",
+      tr: "Acil Servis 7/24, Poliklinikler: 08:30 - 17:00"
+    },
+    phone: "+90 326 618 40 00",
+    features: ["services", "hospitals"]
+  },
+  {
+    id: "place-16",
+    name: {
+      ar: "مطاعم شاورما إسكندرون الشهيرة (İskenderun Döneri)",
+      tr: "Meşhur İskenderun Döneri Durakları (Petek & Ali Usta)"
+    },
+    category: "food",
+    description: {
+      ar: "إسكندرون هي مهد الشاورما التركية بالخبز المحمص الخاص مع الصلصة الغنية والبهارات الحاتية اللذيذة والجبن، وهي الوجبة الطلابية الأكثر تفضيلاً وشهرة في المدينة.",
+      tr: "Özel sosu, kaşarı ve çıtır lavaşıyla tüm Türkiye'de meşhur olan orijinal İskenderun dönerinin lezzet durakları."
+    },
+    address: {
+      ar: "شارع شهيد بامير ومحيط ساحة أتاتورك، إسكندرون",
+      tr: "Şehit Pamir ve Çarşı Çevresi, İskenderun / Hatay"
+    },
+    district: {
+      ar: "وسط البلد (Çarşı)",
+      tr: "Şehir Çarşısı"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Iskenderun+Doner",
+    image: "https://images.unsplash.com/photo-1561651823-34feb02250e4?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "وجبة مشبعة جداً واقتصادية في نفس الوقت. اطلب 'Soslu Kaşarlı Dürüm' لتذوق النكهة الحقيقية لشاورما إسكندرون الأصلية.",
+      tr: "Öğrenciler için hem lezzetli hem de doyurucu en popüler öğle yemeğidir. Soslu ve kaşarlı dürüm denemeniz tavsiye edilir."
+    },
+    openingHours: {
+      ar: "10:30 صباحاً - 23:00 مساءً",
+      tr: "10:30 - 23:00"
+    },
+    features: ["food", "budget"]
+  },
+  {
+    id: "place-17",
+    name: {
+      ar: "حلويات بيتك التاريخية والكنافة (Tarihi Petek Pastanesi)",
+      tr: "Tarihi Petek Pastanesi (1942)"
+    },
+    category: "food",
+    description: {
+      ar: "المعلم التاريخي الأبرز للحلويات في إسكندرون منذ عام 1942، يشتهر بتقديم الكنافة الحاتية بالجبن البلدي الطازج، والآيس كريم التركي والحلويات الشرقية الفاخرة.",
+      tr: "1942'den bu yana İskenderun'un lezzet simgesi. Geleneksel Hatay künefesi, dondurma ve tatlı çeşitleriyle meşhur tarihi mekan."
+    },
+    address: {
+      ar: "شارع أتاتورك، الكورنيش البحري، إسكندرون",
+      tr: "Atatürk Bulvarı No:34 Sahil, İskenderun / Hatay"
+    },
+    district: {
+      ar: "الكورنيش (Sahil)",
+      tr: "Sahil"
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Tarihi+Petek+Pastanesi+Iskenderun",
+    image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&auto=format&fit=crop&q=80",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "الكنافة تقدم ساخنة مباشرة من الفرن، مكان رائع جداً لأخذ ضيوفك أو زملائك لتجربة حلوى هاتاي الأصلية.",
+      tr: "Sıcak künefe ve dondurması eşsizdir. Dönem sonu kutlamaları ve misafirlerinizi ağırlamak için ideal tarihi durak."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 00:00 منتصف الليل",
+      tr: "08:00 - 00:00"
+    },
+    phone: "+90 326 614 10 00",
+    features: ["food", "sea_view"]
+  },
+  {
+    id: "bazaar-1-pazartesi",
+    name: {
+      ar: "بازار الإثنين - حي تشانكايا (Çankaya Pazartesi Pazarı)",
+      tr: "Çankaya Pazartesi Pazarı"
+    },
+    category: "bazaars",
+    operatingDay: {
+      ar: "الإثنين",
+      tr: "Pazartesi"
+    },
+    description: {
+      ar: "بازار يوم الإثنين الأسبوعي الشهير في حي تشانكايا؛ يوفر خضروات وفواكه طازجة، أجبان ريفية، بيض بلدي، وملابس منزلية بأسعار مخفضة.",
+      tr: "Çankaya mahallesinde her Pazartesi kurulan taze sebze, meyve, süt ürünleri ve giyim için popüler semt pazarı."
+    },
+    address: {
+      ar: "حي تشانكايا، شارع 350 ومحيط شارع الشهيد أوغوزهان، مساحة السوق، إسكندرون / هاتاي",
+      tr: "Çankaya Mah., 350. Sokak & Şehit Er Oğuzhan Cd. Semt Pazarı Alanı, İskenderun / Hatay"
+    },
+    district: {
+      ar: "تشانكايا (Çankaya)",
+      tr: "Çankaya Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Cankaya+Pazari+Iskenderun",
+    image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "أفضل وقت للتسوق صباحاً من 9:00 إلى 12:00 للحصول على أفضل بضاعة طازجة، أو بعد العصر (16:30) للحصول على أفضل التخفيضات والأسعار الرخيصة.",
+      tr: "Taze ürünler için sabah saatleri, daha uygun fiyatlar için ikindi sonrası 16:30 civarı ziyaret edilmesi tavsiye edilir."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 19:00 مساءً (كل يوم إثنين)",
+      tr: "08:00 - 19:00 (Her Pazartesi)"
+    },
+    features: ["budget", "bus_stop"]
+  },
+  {
+    id: "bazaar-2-sali",
+    name: {
+      ar: "بازار الثلاثاء - حي بارباروس ودوملوبينار (Barbaros Salı Pazarı)",
+      tr: "Barbaros & Dumlupınar Salı Pazarı"
+    },
+    category: "bazaars",
+    operatingDay: {
+      ar: "الثلاثاء",
+      tr: "Salı"
+    },
+    description: {
+      ar: "بازار الثلاثاء الأسبوعي، يضم تشكيلة كبيرة من المأكولات والمؤن والأجبان الريفية والزيتون والمخللات والملابس بأسعار مناسبة جداً.",
+      tr: "Salı günleri kurulan zengin şarküteri, peynir, zeytin, taze sebze ve uygun fiyatlı giyim pazarı."
+    },
+    address: {
+      ar: "حي بارباروس، شارع 147 وتقاطع شارع مدحت باشا، إسكندرون / هاتاي",
+      tr: "Barbaros Mah., 147. Sokak & Mithatpaşa Cd. Kapalı Semt Pazarı, İskenderun / Hatay"
+    },
+    district: {
+      ar: "بارباروس (Barbaros)",
+      tr: "Barbaros Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Barbaros+Pazari+Iskenderun",
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "ممتاز لشراء زيت الزيتون، الزعتر الأخضر، وجبن الحلوم والجبن الأبيض البلدي من المزارعين مباشرة.",
+      tr: "Köy peyniri, zeytin ve taze Hatay lezzetlerini doğrudan üreticiden almak için mükemmeldir."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 19:00 مساءً (كل يوم ثلاثاء)",
+      tr: "08:00 - 19:00 (Her Salı)"
+    },
+    features: ["budget", "bus_stop"]
+  },
+  {
+    id: "bazaar-3-carsamba",
+    name: {
+      ar: "بازار الأربعاء - حي ساكاريا وإسمت إينونو (Sakarya Çarşamba Pazarı)",
+      tr: "Sakarya & İsmet İnönü Kapalı Çarşamba Pazarı"
+    },
+    category: "bazaars",
+    operatingDay: {
+      ar: "الأربعاء",
+      tr: "Çarşamba"
+    },
+    description: {
+      ar: "أحد أكبر وأشهر البازارات الأسبوعية في إسكندرون، مسقوف ومغطى ويوفر كل مستلزمات المطبخ والخضار والفاكهة والأدوات المنزلية.",
+      tr: "İskenderun'un en modern kapalı pazar yerlerinden biri; hava şartlarından etkilenmeden rahat alışveriş imkanı sunar."
+    },
+    address: {
+      ar: "حي ساكاريا، شارع الشهيد أيخان كيفراك، مساحة البازار المغلق، إسكندرون / هاتاي",
+      tr: "Sakarya Mah., Şehit Polis Ayhan Kıvrak Cd. Kapalı Pazar Alanı, İskenderun / Hatay"
+    },
+    district: {
+      ar: "ساكاريا (Sakarya)",
+      tr: "Sakarya Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Sakarya+Kapali+Pazar+Iskenderun",
+    image: "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "البازار مغطى ومسقوف ومحمي من الشمس والمطر، وبجانبه مباشرة موقف سرافيس ينقلك مباشرة للجامعة ولكافة الأحياء.",
+      tr: "Kapalı pazar alanı sayesinde her hava koşulunda rahat alışveriş imkanı sunar, dolmuş durağı hemen yanındadır."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 19:30 مساءً (كل يوم أربعاء)",
+      tr: "08:00 - 19:30 (Her Çarşamba)"
+    },
+    features: ["budget", "bus_stop"]
+  },
+  {
+    id: "bazaar-4-persembe",
+    name: {
+      ar: "بازار الخميس - حي نُمونة (سوق الخضار والأسماك المركزي - Numune Perşembe Pazarı)",
+      tr: "Numune Perşembe Pazarı (Sebze ve Balık Semt Pazarı)"
+    },
+    category: "bazaars",
+    operatingDay: {
+      ar: "الخميس",
+      tr: "Perşembe"
+    },
+    description: {
+      ar: "أشهر وأكبر بازار أسبوعي في إسكندرون؛ يشتهر بسوق الأسماك البحرية الطازجة، وتشكيلة هائلة من الخضروات والفواكه والملابس الرخيصة، ويقع قرب دوار باتش الشهير.",
+      tr: "İskenderun'un en meşhur ve en hareketli pazarı. Taze balık pazarı, sebze-meyve ve giyim reyonlarıyla Paç Meydanı ve eski hastane civarında kurulur."
+    },
+    address: {
+      ar: "حي نُمونة، طريق البازار (Semt Pazarı Yolu)، شارع 152 قرب دوار باتش (Paç Meydanı)، إسكندرون / هاتاي",
+      tr: "Numune Mah., Semt Pazarı Yolu, 152. Sokak (Paç Meydanı & Eski Devlet Hastanesi Civarı), İskenderun / Hatay"
+    },
+    district: {
+      ar: "نُمونة / باتش (Numune)",
+      tr: "Numune Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Numune+Persembe+Pazari+Iskenderun",
+    image: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "تتوفر فيه أسماك البحر الأبيض المتوسط الطازجة بأسعار أرخص بكثير من المحلات والمطاعم العادية.",
+      tr: "Taze Akdeniz balıklarını ve mevsim yeşilliklerini oldukça uygun fiyata bulabilirsiniz."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 19:00 مساءً (كل يوم خميس)",
+      tr: "08:00 - 19:00 (Her Perşembe)"
+    },
+    features: ["budget", "bus_stop"]
+  },
+  {
+    id: "bazaar-5-cuma",
+    name: {
+      ar: "بازار الجمعة - حي مودرن إفلر وسوق القرى (Modernevler Cuma Pazarı)",
+      tr: "Modernevler Kapalı Cuma Pazarı & Eski Hal Köy Pazarı"
+    },
+    category: "bazaars",
+    operatingDay: {
+      ar: "الجمعة",
+      tr: "Cuma"
+    },
+    description: {
+      ar: "بازار الجمعة المغلق؛ ممتاز للتسوق الأسبوعي ومستلزمات الطبخ. كما يُقام صباحاً في منطقة الهال القديم سوق المزارعين الطبيعي للمنتجات القروية.",
+      tr: "Geniş kapalı alana sahip cuma pazarı; kuru bakliyat, taze yeşillikler ve ev ihtiyaçları için oldukça zengindir. Sabah erken saatlerde köy pazarı kurulur."
+    },
+    address: {
+      ar: "حي مودرن إفلر، شارع 308، مساحة البازار المغلق وسوق الهال القديم، إسكندرون / هاتاي",
+      tr: "Modernevler Mah., 308. Sokak Kapalı Pazar Yeri Alanı, İskenderun / Hatay"
+    },
+    district: {
+      ar: "مودرن إفلر (Modernevler)",
+      tr: "Modernevler Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Modernevler+Kapali+Pazari+Iskenderun",
+    image: "https://images.unsplash.com/photo-1506484381205-f7945653044d?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "قريب من السكن الطلابي وسهل الحركة بعربات التسوق لتوافر ممرات واسعة ومسقوفة ونظيفة.",
+      tr: "Geniş koridorları ve kapalı çatısı ile düzenli ve temiz bir pazar ortamına sahiptir."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 19:00 مساءً (كل يوم جمعة)",
+      tr: "08:00 - 19:00 (Her Cuma)"
+    },
+    features: ["budget", "bus_stop"]
+  },
+  {
+    id: "bazaar-6-cumartesi",
+    name: {
+      ar: "بازار السبت - حي مصطفى كمال وبولوتيبي (Mustafa Kemal & Bulutepe Pazarı)",
+      tr: "Mustafa Kemal & Bulutepe Cumartesi Pazarı"
+    },
+    category: "bazaars",
+    operatingDay: {
+      ar: "السبت",
+      tr: "Cumartesi"
+    },
+    description: {
+      ar: "بازار السبت لعطلة نهاية الأسبوع؛ يزوره الطلاب للتسوق وتجهيز مستلزمات الأسبوع الجديد من خضار، بهارات حاتية عريقة، أواني، وملابس بأسعار مناسبة.",
+      tr: "Hafta sonu kurulan cumartesi pazarı; taze Hatay baharatları, taze sebze ve uygun fiyatlı mutfak gereçleri barındırır."
+    },
+    address: {
+      ar: "حي مصطفى كمال، شارع 544 مساحة السوق الأسبوعي، إسكندرون / هاتاي",
+      tr: "Mustafa Kemal Mah., 544. Sokak Semt Pazarı Alanı, İskenderun / Hatay"
+    },
+    district: {
+      ar: "مصطفى كمال (Mustafa Kemal)",
+      tr: "Mustafa Kemal Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Mustafa+Kemal+Pazari+Iskenderun",
+    image: "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "فرصة رائعة بعد أسبوع دراسي لشراء مؤونة الأسبوع والاستمتاع بأجواء البازار التركي التقليدي وتذوق الأطعمة المحلية.",
+      tr: "Haftalık yemek hazırlığı yapan öğrenciler için hafta sonu en ideal pazar durağıdır."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 19:00 مساءً (كل يوم سبت)",
+      tr: "08:00 - 19:00 (Her Cumartesi)"
+    },
+    features: ["budget", "bus_stop"]
+  },
+  {
+    id: "bazaar-7-pazar",
+    name: {
+      ar: "بازار الأحد - حي إسنتيبي ودوملوبينار (Esentepe & Dumlupınar Pazar Pazarı)",
+      tr: "Esentepe & Dumlupınar Pazar Pazarı"
+    },
+    category: "bazaars",
+    operatingDay: {
+      ar: "الأحد",
+      tr: "Pazar"
+    },
+    description: {
+      ar: "بازار يوم الأحد الأخير في الأسبوع قبل بدء الدراسة والدوام الجامعي، يوفر كل احتياجات المنزل الطازجة وأسعار تنافسية جداً في نهاية اليوم.",
+      tr: "Pazar günleri kurulan, yeni ders haftası öncesi mutfak alışverişi için öğrencilerin sıkça tercih ettiği semt pazarı."
+    },
+    address: {
+      ar: "حي إسنتيبي، شارع كوجاتيبي وشارع 391، إسكندرون / هاتاي",
+      tr: "Esentepe Mah., Kocatepe Cd. & 391. Sokak Civarı, İskenderun / Hatay"
+    },
+    district: {
+      ar: "إسنتيبي (Esentepe)",
+      tr: "Esentepe Mah."
+    },
+    googleMapsUrl: "https://maps.google.com/?q=Esentepe+Pazari+Iskenderun",
+    image: "https://images.unsplash.com/photo-1543083477-4f785aeafaa9?w=600&auto=format&fit=crop&q=65",
+    isPopularForStudents: true,
+    studentTips: {
+      ar: "إذا كنت تريد شراء كميات بأسعار رخيصة جداً، اذهب بين الساعة 17:00 و 18:30 قبل إغلاق البازار للحصول على تخفيضات البائعين لتصفية البضاعة.",
+      tr: "Öğrenciler için pazarın kapanış saatlerine yakın (17:00 - 18:30) çok uygun indirimli fiyatlar oluşur."
+    },
+    openingHours: {
+      ar: "08:00 صباحاً - 19:00 مساءً (كل يوم أحد)",
+      tr: "08:00 - 19:00 (Her Pazar)"
+    },
+    features: ["budget", "bus_stop"]
   }
 ];

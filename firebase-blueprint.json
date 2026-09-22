@@ -33,6 +33,14 @@
           "type": "array",
           "description": "Top-bar alert banners/announcements"
         },
+        "directoryMembers": {
+          "type": "array",
+          "description": "Student union directory member cards"
+        },
+        "cityPlaces": {
+          "type": "array",
+          "description": "City guide locations, cafes, and spots in İskenderun"
+        },
         "logo": {
           "type": "string",
           "description": "Base64 or URL of the portal logo"

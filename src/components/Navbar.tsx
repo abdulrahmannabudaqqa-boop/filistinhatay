@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
-import { Globe, Lock, LayoutDashboard, LogOut, Award, Menu, X, Bell, BookOpen, Home, Newspaper, Link, Compass, Calendar, Fingerprint, Sun, Moon, Users } from 'lucide-react';
+import { Globe, Lock, LayoutDashboard, LogOut, Award, Menu, X, Bell, BookOpen, Home, Newspaper, Link, Compass, Calendar, Fingerprint, Sun, Moon, Users, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 // @ts-ignore
 import logoImg from '../assets/images/logo.jpeg';
@@ -35,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const menuItems = [
     { id: 'home', label: t('home'), icon: <Home className="w-4 h-4" /> },
     { id: 'news', label: t('news'), icon: <Newspaper className="w-4 h-4" /> },
+    { id: 'cityGuide', label: t('cityGuide'), icon: <MapPin className="w-4 h-4" /> },
     { id: 'directory', label: t('directory'), icon: <Users className="w-4 h-4" /> },
     { id: 'links', label: t('links'), icon: <Link className="w-4 h-4" /> },
     { id: 'courses', label: t('courses'), icon: <BookOpen className="w-4 h-4" /> },

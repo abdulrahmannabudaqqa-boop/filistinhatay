@@ -158,3 +158,30 @@ export interface DirectoryMember {
   bio?: MultilingualText;
 }
 
+export type CityPlaceCategory = 
+  | 'cafes' 
+  | 'transport' 
+  | 'shopping' 
+  | 'services' 
+  | 'districts' 
+  | 'food' 
+  | 'hospitals'
+  | 'bazaars';
+
+export interface CityPlace {
+  id: string;
+  name: MultilingualText;
+  category: CityPlaceCategory;
+  description: MultilingualText;
+  address: MultilingualText;
+  district: MultilingualText; // e.g. "Sahil / الكورنيش"
+  googleMapsUrl: string;
+  image: string;
+  isPopularForStudents?: boolean;
+  studentTips?: MultilingualText; // نصائح وإرشادات خاصة بالطالب
+  openingHours?: MultilingualText;
+  operatingDay?: MultilingualText; // يوم البازار الأسبوعي (e.g. "الإثنين" / "Pazartesi")
+  phone?: string;
+  features?: string[]; // e.g. ['wifi', 'study', 'budget', 'sea_view', 'bus_stop']
+}
+
