@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { NewsItem, ActivityItem, ImportantLink } from '../types';
 import { 
   ArrowRight, Newspaper, Calendar, Link2, BookOpen, 
-  Users, Award, ShieldAlert, GraduationCap, ArrowUpRight, Sparkles, Compass, MapPin, Building 
+  Users, Award, ShieldAlert, GraduationCap, ArrowUpRight, Sparkles, Compass, MapPin, Building, Globe 
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -12,10 +12,25 @@ interface HomePageProps {
   activities: ActivityItem[];
   links: ImportantLink[];
   setCurrentTab: (tab: string) => void;
+  onOpenUniversityNews?: () => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ news, activities, links, setCurrentTab }) => {
+export const HomePage: React.FC<HomePageProps> = ({ 
+  news, 
+  activities, 
+  links, 
+  setCurrentTab,
+  onOpenUniversityNews 
+}) => {
   const { t, getText, dir, language } = useLanguage();
+
+  const handleGoToUnivNews = () => {
+    if (onOpenUniversityNews) {
+      onOpenUniversityNews();
+    } else {
+      setCurrentTab('news');
+    }
+  };
 
   const latestNews = news.slice(0, 2);
   const upcomingActivities = activities.filter(a => !a.isPast);
@@ -240,7 +255,103 @@ export const HomePage: React.FC<HomePageProps> = ({ news, activities, links, set
 
       </div>
 
-      {/* Iskenderun & Dormitories Dual Guide Banners */}
+      {/* Live University Announcements Highlight Card */}
+      <section className="bg-gradient-to-r from-slate-900 via-slate-850 to-burgundy-950 text-white rounded-3xl border border-slate-800 p-6 sm:p-7 shadow-lg relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-slate-800 pb-5">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                LIVE • iste.edu.tr
+              </span>
+              <span className="text-[11px] text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
+                {language === 'ar' ? 'مترجم بالذكاء الاصطناعي' : 'Yapay Zeka Çevirisi'}
+              </span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-extrabold text-white flex items-center gap-2">
+              <Globe className="w-5 h-5 text-red-500" />
+              <span>{language === 'ar' ? 'إعلانات وأخبار جامعة إسكندرون التقنية الرسمية (İSTE)' : 'İSTE Resmi Canlı Duyuruları'}</span>
+            </h3>
+            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              {language === 'ar'
+                ? 'متابعة لحظية ومباشرة لقرارات شؤون الطلاب، مواعيد التسجيل، امتحانات اللغات الأجنبية، ونتائج المفاضلات والتبادل الطلابي.'
+                : 'Öğrenci işleri kararları, ders kayıtları, yabancı dil sınavları ve Erasmus sonuçları anlık olarak yayınlanmaktadır.'}
+            </p>
+          </div>
+
+          <button
+            id="home-open-univ-news-btn"
+            onClick={handleGoToUnivNews}
+            className="self-start md:self-center px-4 py-2.5 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xs font-extrabold shadow-md transition duration-200 flex items-center gap-2 shrink-0 cursor-pointer"
+          >
+            <span>{language === 'ar' ? 'تصفح جميع الإعلانات الجامعية' : 'Tüm Duyuruları Gör'}</span>
+            <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+
+        {/* Quick Highlights Grid */}
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
+          <div 
+            onClick={handleGoToUnivNews}
+            className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-red-500/40 p-4 rounded-2xl transition duration-200 cursor-pointer space-y-2 group"
+          >
+            <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+              <span className="text-amber-400">22/09/2026</span>
+              <span className="bg-red-500/20 text-red-300 px-2 py-0.5 rounded text-[9px]">YDYO</span>
+            </div>
+            <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-amber-300 transition line-clamp-2 leading-snug">
+              {language === 'ar' 
+                ? 'امتحان اللغة الأجنبية لبرامج التبادل الطلابي (إيراسموس، مولانا، فارابي) 2026-2'
+                : 'DEĞİŞİM PROGRAMLARI YABANCI DİL SINAVI ERASMUS, MEVLANA, FARABİ'}
+            </h4>
+            <span className="text-[10px] text-slate-400 flex items-center gap-1 group-hover:underline">
+              <span>{language === 'ar' ? 'عرض التفاصيل والترجمة' : 'Detayları İncele'}</span>
+              <ArrowRight className={`w-3 h-3 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            </span>
+          </div>
+
+          <div 
+            onClick={handleGoToUnivNews}
+            className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-red-500/40 p-4 rounded-2xl transition duration-200 cursor-pointer space-y-2 group"
+          >
+            <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+              <span className="text-amber-400">17/09/2026</span>
+              <span className="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded text-[9px]">Sınavlar</span>
+            </div>
+            <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-amber-300 transition line-clamp-2 leading-snug">
+              {language === 'ar' 
+                ? 'إعلان امتحان الإعفاء لمادتي اللغة الإنجليزية المشتركة (İngilizce I و II)'
+                : 'Ortak Zorunlu İngilizce I ve II Dersleri Muafiyet Sınavı'}
+            </h4>
+            <span className="text-[10px] text-slate-400 flex items-center gap-1 group-hover:underline">
+              <span>{language === 'ar' ? 'عرض التفاصيل والترجمة' : 'Detayları İncele'}</span>
+              <ArrowRight className={`w-3 h-3 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            </span>
+          </div>
+
+          <div 
+            onClick={handleGoToUnivNews}
+            className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-red-500/40 p-4 rounded-2xl transition duration-200 cursor-pointer space-y-2 group sm:col-span-2 lg:col-span-1"
+          >
+            <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+              <span className="text-amber-400">15/09/2026</span>
+              <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[9px]">ÖİDB</span>
+            </div>
+            <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-amber-300 transition line-clamp-2 leading-snug">
+              {language === 'ar' 
+                ? 'إجراءات طلبات الانتقال والالتحاق كطالب خاص للطلاب في الخارج'
+                : 'Yurtdışından Yatay Geçiş ve Özel Öğrencilik İşlemleri'}
+            </h4>
+            <span className="text-[10px] text-slate-400 flex items-center gap-1 group-hover:underline">
+              <span>{language === 'ar' ? 'عرض التفاصيل والترجمة' : 'Detayları İncele'}</span>
+              <ArrowRight className={`w-3 h-3 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            </span>
+          </div>
+        </div>
+      </section>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Dormitories Banner */}
         <div 

@@ -8,7 +8,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
-import { getLiveUniversityNews, callGroqChat, UniversityNewsItem } from './server/groqService';
+import { getLiveUniversityNews, callGroqChat, stripUrls, UniversityNewsItem } from './server/groqService';
 
 const PORT = 3000;
 
@@ -63,7 +63,7 @@ const fallbackNews: UniversityNewsItem[] = [
     date: '2026-06-20',
     categoryTr: 'Uluslararası',
     categoryAr: 'شؤون دولية',
-    link: 'https://iste.edu.tr/duyuru/uluslararasi-ogrenci-basvurulari-basladi',
+    link: '',
     isRelevantToForeigners: true
   },
   {
@@ -75,7 +75,7 @@ const fallbackNews: UniversityNewsItem[] = [
     date: '2026-06-18',
     categoryTr: 'Duyuru',
     categoryAr: 'إعلان',
-    link: 'https://iste.edu.tr/duyuru/erasmus-sonuclari-aciklandi',
+    link: '',
     isRelevantToForeigners: true
   },
   {
@@ -87,7 +87,7 @@ const fallbackNews: UniversityNewsItem[] = [
     date: '2026-06-15',
     categoryTr: 'Sınav Duyuruları',
     categoryAr: 'إعلانات الامتحانات',
-    link: 'https://iste.edu.tr/duyuru/tomer-muafiyet-sinavi',
+    link: '',
     isRelevantToForeigners: true
   },
   {
@@ -99,7 +99,7 @@ const fallbackNews: UniversityNewsItem[] = [
     date: '2026-06-10',
     categoryTr: 'Haber',
     categoryAr: 'أخبار',
-    link: 'https://iste.edu.tr/haber/muhendislik-akreditasyon-basarisi',
+    link: '',
     isRelevantToForeigners: false
   },
   {
@@ -111,7 +111,7 @@ const fallbackNews: UniversityNewsItem[] = [
     date: '2026-06-05',
     categoryTr: 'Haber',
     categoryAr: 'أخبار',
-    link: 'https://iste.edu.tr/haber/teknofest-rekordu',
+    link: '',
     isRelevantToForeigners: false
   }
 ];
@@ -200,18 +200,41 @@ async function startServer() {
     }
   });
 
-  // API Route to fetch actual İSTE news scraped live from iste.edu.tr and translated via Groq AI
+  // API Route to fetch actual İSTE news scraped live from iste.edu.tr and translated via Gemini/Groq AI
   app.get('/api/university-news', async (req, res) => {
     try {
       const forceRefresh = req.query.refresh === 'true' || req.query.force === 'true';
       const result = await getLiveUniversityNews(forceRefresh);
-      if (result.data && result.data.length > 0) {
-        return res.json({ success: true, source: result.source, data: result.data });
-      }
-      res.json({ success: true, source: 'fallback', data: fallbackNews });
+      const rawData = (result.data && result.data.length > 0) ? result.data : fallbackNews;
+      
+      const cleanData = rawData.map(item => ({
+        ...item,
+        titleAr: stripUrls(item.titleAr || ''),
+        contentAr: stripUrls(item.contentAr || ''),
+        titleTr: stripUrls(item.titleTr || ''),
+        contentTr: stripUrls(item.contentTr || ''),
+        link: ''
+      })).sort((a, b) => {
+        if (a.isRelevantToForeigners && !b.isRelevantToForeigners) return -1;
+        if (!a.isRelevantToForeigners && b.isRelevantToForeigners) return 1;
+        return (b.date || '').localeCompare(a.date || '');
+      });
+
+      return res.json({
+        success: true,
+        source: result.source || 'fallback',
+        lastUpdated: result.lastUpdated,
+        data: cleanData
+      });
     } catch (error) {
       console.error('Error in fetching university news:', error);
-      res.json({ success: true, source: 'fallback-error', data: fallbackNews });
+      const cleanFallback = fallbackNews.map(item => ({
+        ...item,
+        titleAr: stripUrls(item.titleAr || ''),
+        contentAr: stripUrls(item.contentAr || ''),
+        link: ''
+      }));
+      res.json({ success: true, source: 'fallback-error', data: cleanFallback });
     }
   });
 

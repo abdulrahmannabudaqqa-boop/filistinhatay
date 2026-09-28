@@ -151,6 +151,13 @@ function AppMain() {
     }
   });
 
+  const [newsDefaultMode, setNewsDefaultMode] = useState<'union' | 'university'>('union');
+
+  const handleOpenUniversityNews = () => {
+    setNewsDefaultMode('university');
+    setCurrentTab('news');
+  };
+
   const [assistants, setAssistants] = useState<any[]>(() => {
     try {
       const saved = localStorage.getItem('pales_union_assistants');
@@ -639,7 +646,13 @@ function AppMain() {
       case 'directory':
         return <DirectorySection members={directoryMembers} />;
       case 'news':
-        return <NewsSection news={news} incrementViews={handleIncrementNewsViews} />;
+        return (
+          <NewsSection 
+            news={news} 
+            incrementViews={handleIncrementNewsViews} 
+            defaultNewsType={newsDefaultMode} 
+          />
+        );
       case 'links':
         return <ImportantLinks links={links} />;
       case 'courses':
@@ -704,6 +717,7 @@ function AppMain() {
             activities={activities} 
             links={links} 
             setCurrentTab={setCurrentTab} 
+            onOpenUniversityNews={handleOpenUniversityNews}
           />
         );
       default:
@@ -713,6 +727,7 @@ function AppMain() {
             activities={activities} 
             links={links} 
             setCurrentTab={setCurrentTab} 
+            onOpenUniversityNews={handleOpenUniversityNews}
           />
         );
     }

@@ -3,7 +3,7 @@ import { NewsItem, CourseItem, DeptAnnouncementItem, ActivityItem, ImportantLink
 import { useLanguage } from '../context/LanguageContext';
 import { 
   Plus, Edit2, Trash2, Save, FileText, Newspaper, BookOpen, Bell,
-  Ticket, Link2, Building2, Megaphone, CheckCircle2, AlertTriangle, Users, Eye, Crop, GraduationCap, Tag, Search, MapPin
+  Ticket, Link2, Building2, Megaphone, CheckCircle2, AlertTriangle, Users, Eye, Crop, GraduationCap, Tag, Search, MapPin, Globe, RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ImageCropperModal } from './ImageCropperModal';
@@ -221,11 +221,36 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Selected Activity to view Registrants
   const [viewRegistrantsActivityId, setViewRegistrantsActivityId] = useState<string | null>(null);
 
+  const [isSyncingUnivNews, setIsSyncingUnivNews] = useState(false);
+
   const triggerToast = (msg: string) => {
     setShowToast(msg);
     setTimeout(() => {
       setShowToast(null);
     }, 3000);
+  };
+
+  const handleSyncUniversityNews = async () => {
+    setIsSyncingUnivNews(true);
+    try {
+      const res = await fetch('/api/university-news?refresh=true');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        triggerToast(language === 'ar' ? `تم سحب وتحديث ${json.data.length} إعلاناً رسمياً من موقع جامعة İSTE بنجاح!` : `İSTE duyuruları başarıyla güncellendi (${json.data.length} adet).`);
+        try {
+          localStorage.setItem('pales_union_live_iste_news', JSON.stringify(json.data));
+          if (json.lastUpdated) {
+            localStorage.setItem('pales_union_live_iste_time', json.lastUpdated);
+          }
+        } catch {}
+      } else {
+        triggerToast(language === 'ar' ? 'تعذر تحديث إعلانات الجامعة' : 'Duyuru güncelleme başarısız');
+      }
+    } catch (e) {
+      triggerToast(language === 'ar' ? 'تعذر الاتصال بالخادم' : 'Sunucu bağlantı hatası');
+    } finally {
+      setIsSyncingUnivNews(false);
+    }
   };
 
   // Image Cropping Modal State
@@ -1019,9 +1044,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </form>
             ) : (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center select-none">
-                  <span className="text-xs text-slate-400 font-semibold">{news.length} {t('news')}</span>
+              <div className="space-y-6">
+                
+                {/* University Live News Sync Management Box */}
+                <div className="p-4 bg-gradient-to-r from-slate-900 to-burgundy-950 text-white rounded-xl border border-slate-800 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-emerald-400" />
+                      <h4 className="font-extrabold text-xs sm:text-sm text-white">
+                        {language === 'ar' ? 'بث ومزامنة إعلانات جامعة İSTE المباشرة (iste.edu.tr)' : 'İSTE Resmi Duyuruları Canlı Senkronizasyonu'}
+                      </h4>
+                      <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase">
+                        Active
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      {language === 'ar'
+                        ? 'النظام يقوم تلقائياً بسحب إعلانات موقع الجامعة والترجمة الفورية بالذكاء الاصطناعي. يمكنك الضغط لمزامنة يدوية فورية لأحدث الإعلانات.'
+                        : 'Sistem otomatik olarak üniversite duyurularını çekip yapay zeka ile çevirir. İhtiyaç anında manuel güncelleme yapabilirsiniz.'}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSyncUniversityNews}
+                    disabled={isSyncingUnivNews}
+                    className="px-3.5 py-2 bg-red-700 hover:bg-red-800 disabled:opacity-60 text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center gap-2 shrink-0 cursor-pointer"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncingUnivNews ? 'animate-spin' : ''}`} />
+                    <span>{isSyncingUnivNews 
+                      ? (language === 'ar' ? 'جاري السحب والمزامنة...' : 'Güncelleniyor...') 
+                      : (language === 'ar' ? 'سحب وتحديث فوري الآن' : 'Şimdi Güncelle')}</span>
+                  </button>
+                </div>
+
+                <div className="flex justify-between items-center select-none pt-2 border-t border-slate-100">
+                  <h4 className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                    <Newspaper className="w-4 h-4 text-red-600" />
+                    <span>{language === 'ar' ? 'أخبار ونشاطات التجمع الطلابي' : 'Topluluk Haberleri'}</span>
+                    <span className="text-slate-400 font-semibold ml-1">({news.length})</span>
+                  </h4>
                   <button id="admin-news-add-btn" onClick={() => handleStartEditNews()} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-700 hover:bg-red-800 text-xs text-white font-bold rounded-lg shadow-sm">
                     <Plus className="w-4 h-4" />
                     <span>{t('addNew')}</span>
