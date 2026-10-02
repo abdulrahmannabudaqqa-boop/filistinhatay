@@ -125,26 +125,25 @@ async function startServer() {
   // API Routes for persisting custom portal data
   app.get('/api/site-data', async (req, res) => {
     try {
+      const filePath = path.join(process.cwd(), 'site-data.json');
       if (db) {
-        const docRef = doc(db, 'portal_data', 'global_settings');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          return res.json({ success: true, siteData: docSnap.data() });
-        } else {
-          // Seed from local file if Firestore document is empty
-          const filePath = path.join(process.cwd(), 'site-data.json');
-          if (fs.existsSync(filePath)) {
-            const content = fs.readFileSync(filePath, 'utf8');
-            const parsed = JSON.parse(content);
-            await setDoc(docRef, parsed);
-            return res.json({ success: true, siteData: parsed });
+        try {
+          const docRef = doc(db, 'portal_data', 'global_settings');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Cache latest data to local disk file
+            try {
+              fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+            } catch (wErr) {}
+            return res.json({ success: true, siteData: data });
           }
-          return res.json({ success: true, siteData: null });
+        } catch (dbErr) {
+          console.warn('Firestore getDoc in /api/site-data error, reading local file:', dbErr);
         }
       }
 
       // Local fallback
-      const filePath = path.join(process.cwd(), 'site-data.json');
       if (fs.existsSync(filePath)) {
         const content = fs.readFileSync(filePath, 'utf8');
         const parsed = JSON.parse(content);
@@ -160,43 +159,193 @@ async function startServer() {
   app.post('/api/site-data', async (req, res) => {
     try {
       const updates = req.body;
-      if (db) {
-        const docRef = doc(db, 'portal_data', 'global_settings');
-        const docSnap = await getDoc(docRef);
-        let currentData: any = {};
-        if (docSnap.exists()) {
-          currentData = docSnap.data();
-        } else {
-          // seed from local file if Firestore document is empty
-          const filePath = path.join(process.cwd(), 'site-data.json');
-          if (fs.existsSync(filePath)) {
-            try {
-              currentData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-            } catch (e) {}
-          }
-        }
-        const mergedData = { ...currentData, ...updates };
-        await setDoc(docRef, mergedData);
-        return res.json({ success: true });
-      }
-
-      // Local fallback
       const filePath = path.join(process.cwd(), 'site-data.json');
       let currentData: any = {};
       if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath, 'utf8');
         try {
-          currentData = JSON.parse(content);
+          currentData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        } catch (e) {}
+      }
+
+      if (db) {
+        try {
+          const docRef = doc(db, 'portal_data', 'global_settings');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            currentData = { ...currentData, ...docSnap.data() };
+          }
         } catch (e) {
-          console.error('Failed to parse existing site-data.json:', e);
+          console.warn('Could not read existing doc before write in /api/site-data:', e);
         }
       }
+
       const mergedData = { ...currentData, ...updates };
-      fs.writeFileSync(filePath, JSON.stringify(mergedData, null, 2), 'utf8');
+
+      // Save to disk first for durability
+      try {
+        fs.writeFileSync(filePath, JSON.stringify(mergedData, null, 2), 'utf8');
+      } catch (fErr) {
+        console.error('Could not write to site-data.json:', fErr);
+      }
+
+      // Save to Firestore
+      if (db) {
+        try {
+          const docRef = doc(db, 'portal_data', 'global_settings');
+          await setDoc(docRef, mergedData, { merge: true });
+        } catch (dbErr) {
+          console.error('Firestore save failed in /api/site-data:', dbErr);
+        }
+      }
+
       res.json({ success: true });
     } catch (err) {
       console.error('Error saving site data:', err);
       res.status(500).json({ success: false, error: 'Failed to save site data' });
+    }
+  });
+
+  // Dedicated API Route to register student for a course
+  app.post('/api/register-course', async (req, res) => {
+    try {
+      const { courseId, registration } = req.body;
+      if (!courseId || !registration) {
+        return res.status(400).json({ success: false, error: 'courseId and registration data required' });
+      }
+
+      const filePath = path.join(process.cwd(), 'site-data.json');
+      let currentData: any = {};
+      if (fs.existsSync(filePath)) {
+        try { currentData = JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch (e) {}
+      }
+
+      if (db) {
+        try {
+          const docRef = doc(db, 'portal_data', 'global_settings');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            currentData = { ...currentData, ...docSnap.data() };
+          }
+        } catch (e) {
+          console.warn('Firestore read error in register-course:', e);
+        }
+      }
+
+      const courses = Array.isArray(currentData.courses) ? currentData.courses : [];
+      let updatedCourse: any = null;
+      const updatedCourses = courses.map((c: any) => {
+        if (c.id === courseId) {
+          const currentRegs = Array.isArray(c.registrations) ? c.registrations : [];
+          const newReg = {
+            ...registration,
+            id: `reg-course-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            registeredAt: new Date().toISOString()
+          };
+          updatedCourse = {
+            ...c,
+            registeredCount: (c.registeredCount || currentRegs.length) + 1,
+            registrations: [newReg, ...currentRegs]
+          };
+          return updatedCourse;
+        }
+        return c;
+      });
+
+      if (!updatedCourse) {
+        return res.status(404).json({ success: false, error: 'Course not found' });
+      }
+
+      currentData.courses = updatedCourses;
+
+      try {
+        fs.writeFileSync(filePath, JSON.stringify(currentData, null, 2), 'utf8');
+      } catch (e) {}
+
+      if (db) {
+        try {
+          const docRef = doc(db, 'portal_data', 'global_settings');
+          await setDoc(docRef, { courses: updatedCourses }, { merge: true });
+        } catch (dbErr) {
+          console.error('Firestore save failed in register-course:', dbErr);
+        }
+      }
+
+      return res.json({ success: true, course: updatedCourse });
+    } catch (err: any) {
+      console.error('Error in /api/register-course:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // Dedicated API Route to register student for an activity
+  app.post('/api/register-activity', async (req, res) => {
+    try {
+      const { activityId, registration } = req.body;
+      if (!activityId || !registration) {
+        return res.status(400).json({ success: false, error: 'activityId and registration data required' });
+      }
+
+      const filePath = path.join(process.cwd(), 'site-data.json');
+      let currentData: any = {};
+      if (fs.existsSync(filePath)) {
+        try { currentData = JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch (e) {}
+      }
+
+      if (db) {
+        try {
+          const docRef = doc(db, 'portal_data', 'global_settings');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            currentData = { ...currentData, ...docSnap.data() };
+          }
+        } catch (e) {
+          console.warn('Firestore read error in register-activity:', e);
+        }
+      }
+
+      const activities = Array.isArray(currentData.activities) ? currentData.activities : [];
+      let updatedActivity: any = null;
+      const updatedActivities = activities.map((a: any) => {
+        if (a.id === activityId) {
+          const currentRegs = Array.isArray(a.registrations) ? a.registrations : [];
+          const newReg = {
+            ...registration,
+            id: `reg-act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            registeredAt: new Date().toISOString()
+          };
+          updatedActivity = {
+            ...a,
+            registeredCount: (a.registeredCount || 0) + 1,
+            registrations: [newReg, ...currentRegs]
+          };
+          return updatedActivity;
+        }
+        return a;
+      });
+
+      if (!updatedActivity) {
+        return res.status(404).json({ success: false, error: 'Activity not found' });
+      }
+
+      currentData.activities = updatedActivities;
+
+      try {
+        fs.writeFileSync(filePath, JSON.stringify(currentData, null, 2), 'utf8');
+      } catch (e) {}
+
+      if (db) {
+        try {
+          const docRef = doc(db, 'portal_data', 'global_settings');
+          await setDoc(docRef, { activities: updatedActivities }, { merge: true });
+        } catch (dbErr) {
+          console.error('Firestore save failed in register-activity:', dbErr);
+        }
+      }
+
+      return res.json({ success: true, activity: updatedActivity });
+    } catch (err: any) {
+      console.error('Error in /api/register-activity:', err);
+      res.status(500).json({ success: false, error: err.message });
     }
   });
 

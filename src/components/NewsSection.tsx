@@ -478,7 +478,6 @@ export const NewsSection: React.FC<NewsSectionProps> = ({
                   <div className="space-y-4">
                     {filteredUnivNews.map((item, idx) => {
                       const isTrExpanded = !!expandedTrId[item.id];
-                      const isJustCopied = copiedId === item.id;
 
                       return (
                         <motion.div

@@ -220,6 +220,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Selected Activity to view Registrants
   const [viewRegistrantsActivityId, setViewRegistrantsActivityId] = useState<string | null>(null);
+  // Selected Course to view Registrants
+  const [viewRegistrantsCourseId, setViewRegistrantsCourseId] = useState<string | null>(null);
+  const [courseRegSearch, setCourseRegSearch] = useState('');
+  const [activityRegSearch, setActivityRegSearch] = useState('');
 
   const [isSyncingUnivNews, setIsSyncingUnivNews] = useState(false);
 
@@ -485,7 +489,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleSaveCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editCourseItem || !editCourseItem.id) return;
-    onSaveCourse(editCourseItem as CourseItem);
+    const existing = courses.find(c => c.id === editCourseItem.id);
+    const finalCourse: CourseItem = {
+      ...editCourseItem,
+      registrations: existing?.registrations || editCourseItem.registrations || [],
+      registeredCount: existing?.registeredCount ?? (existing?.registrations?.length) ?? editCourseItem.registeredCount ?? 0
+    };
+    onSaveCourse(finalCourse);
     setEditCourseItem(null);
     triggerToast(t('actionSuccess'));
   };
@@ -743,6 +753,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     e.preventDefault();
     if (!editActivityItem || !editActivityItem.id) return;
     let finalItem = { ...editActivityItem } as ActivityItem;
+    const existing = activities.find(a => a.id === finalItem.id);
+    if (existing) {
+      finalItem.registrations = existing.registrations || finalItem.registrations || [];
+      finalItem.registeredCount = existing.registeredCount ?? finalItem.registeredCount ?? (finalItem.registrations?.length || 0);
+    }
     if (finalItem.image && finalItem.image.startsWith('data:image')) {
       try {
         finalItem.image = await compressDataUrl(finalItem.image, 900, 900, 0.75);
@@ -1964,6 +1979,148 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <button type="submit" className="px-5 py-2 bg-red-700 hover:bg-red-800 font-bold text-white rounded-lg flex items-center gap-1"><Save className="w-4 h-4"/>{t('saveBtn')}</button>
                 </div>
               </form>
+            ) : viewRegistrantsCourseId ? (
+              /* View registered students list for course */
+              <div className="space-y-4">
+                <div className="flex flex-wrap justify-between items-center gap-2 select-none border-b border-slate-150 pb-2">
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-800 flex items-center gap-1.5">
+                      <GraduationCap className="w-4 h-4 text-red-600" />
+                      <span>{t('registeredCourseListTitle')}</span>
+                    </h3>
+                    <p className="text-[11px] text-red-600 font-bold mt-0.5">
+                      {getText(courses.find(c => c.id === viewRegistrantsCourseId)?.title)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setViewRegistrantsCourseId(null); setCourseRegSearch(''); }}
+                    className="text-xs font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-slate-700 transition"
+                  >
+                    &larr; {language === 'ar' ? 'العودة للكورسات' : 'Derslere Geri Dön'}
+                  </button>
+                </div>
+
+                {(() => {
+                  const course = courses.find(c => c.id === viewRegistrantsCourseId);
+                  const rawList = course?.registrations || [];
+                  const filteredList = rawList.filter(reg => {
+                    if (!courseRegSearch.trim()) return true;
+                    const q = courseRegSearch.toLowerCase();
+                    return (
+                      (reg.name && reg.name.toLowerCase().includes(q)) ||
+                      (reg.email && reg.email.toLowerCase().includes(q)) ||
+                      (reg.phone && reg.phone.includes(q)) ||
+                      (reg.major && reg.major.toLowerCase().includes(q))
+                    );
+                  });
+
+                  const handleCopyEmails = () => {
+                    const emails = rawList.map(r => r.email).filter(Boolean).join(', ');
+                    navigator.clipboard.writeText(emails);
+                    triggerToast(language === 'ar' ? 'تم نسخ جميع إيميلات المسجلين' : 'Tüm e-postalar kopyalandı');
+                  };
+
+                  const handleExportCSV = () => {
+                    const headers = ['Full Name', 'Major', 'Email', 'Phone', 'Date'];
+                    const rows = rawList.map(r => [
+                      `"${(r.name || '').replace(/"/g, '""')}"`,
+                      `"${(r.major || '').replace(/"/g, '""')}"`,
+                      `"${(r.email || '').replace(/"/g, '""')}"`,
+                      `"${(r.phone || '').replace(/"/g, '""')}"`,
+                      `"${(r.registeredAt || '').replace(/"/g, '""')}"`
+                    ]);
+                    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', encodedUri);
+                    link.setAttribute('download', `course-registrations-${course?.id || 'list'}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  };
+
+                  return (
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="relative flex-1 min-w-[200px]">
+                          <Search className="w-3.5 h-3.5 absolute right-3 top-2.5 text-slate-400" />
+                          <input
+                            type="text"
+                            placeholder={language === 'ar' ? 'بحث بالاسم، التخصص، الإيميل أو الهاتف...' : 'İsim, bölüm, e-posta veya telefon ile ara...'}
+                            value={courseRegSearch}
+                            onChange={(e) => setCourseRegSearch(e.target.value)}
+                            className="w-full text-xs pr-8 pl-3 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-red-600"
+                          />
+                        </div>
+                        {rawList.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={handleCopyEmails}
+                              className="text-[11px] font-bold px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                            >
+                              {language === 'ar' ? 'نسخ الإيميلات' : 'E-postaları Kopyala'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleExportCSV}
+                              className="text-[11px] font-bold px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-xs"
+                            >
+                              {language === 'ar' ? 'تصدير Excel / CSV' : 'CSV İndir'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {rawList.length === 0 ? (
+                        <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                          <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-slate-500 font-bold text-xs">{t('noRegistrationsYet')}</p>
+                          <p className="text-slate-400 text-[11px] mt-1">
+                            {language === 'ar' ? 'أي طالب يسجل حضوره في هذا الدرس سيظهر هنا فوراً في جميع الأجهزة.' : 'Öğrenciler derse katılım kaydı yaptığında tüm cihazlarda anında burada görünecektir.'}
+                          </p>
+                        </div>
+                      ) : filteredList.length === 0 ? (
+                        <p className="text-slate-400 text-center py-6 text-xs">{language === 'ar' ? 'لا توجد نتائج تطابق بحثك' : 'Aramanızla eşleşen sonuç bulunamadı'}</p>
+                      ) : (
+                        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700">
+                                <th className="p-2.5 font-bold">#</th>
+                                <th className="p-2.5 font-bold">{t('fullName')}</th>
+                                <th className="p-2.5 font-bold">{language === 'ar' ? 'التخصص' : 'Bölüm'}</th>
+                                <th className="p-2.5 font-bold">{t('emailAddress')}</th>
+                                <th className="p-2.5 font-bold">{t('phoneNumber')}</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {filteredList.map((reg, regIdx) => (
+                                <tr key={regIdx} className="hover:bg-slate-50/70 transition">
+                                  <td className="p-2.5 text-slate-400 font-mono text-[10px]">{regIdx + 1}</td>
+                                  <td className="p-2.5 text-slate-900 font-bold">{reg.name}</td>
+                                  <td className="p-2.5 text-slate-600 font-medium">
+                                    <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px]">{reg.major || '-'}</span>
+                                  </td>
+                                  <td className="p-2.5 text-slate-500 font-mono text-[11px]">
+                                    <a href={`mailto:${reg.email}`} className="text-blue-600 hover:underline">{reg.email}</a>
+                                  </td>
+                                  <td className="p-2.5 text-slate-600 font-mono text-[11px]" dir="ltr">
+                                    <a href={`https://wa.me/${(reg.phone || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-emerald-700 hover:underline">
+                                      {reg.phone}
+                                    </a>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex justify-between items-center select-none">
@@ -1989,6 +2146,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         )}
                       </div>
                       <div className="flex items-center gap-1 shrink-0 select-none">
+                        <button
+                          id={`admin-course-view-regs-${item.id}`}
+                          onClick={() => setViewRegistrantsCourseId(item.id)}
+                          className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded flex items-center gap-1 font-bold text-[10px]"
+                          title="View Registrants"
+                        >
+                          <Users className="w-3.5 h-3.5" />
+                          <span>({item.registrations?.length || 0})</span>
+                        </button>
                         <button id={`admin-course-edit-${item.id}`} onClick={() => handleStartEditCourse(item)} className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded" title={t('editBtn')}>
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
@@ -2570,46 +2736,141 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             ) : viewRegistrantsActivityId ? (
               /* View registered students list */
               <div className="space-y-4">
-                <div className="flex justify-between items-center select-none border-b border-slate-150 pb-2">
+                <div className="flex flex-wrap justify-between items-center gap-2 select-none border-b border-slate-150 pb-2">
                   <div>
-                    <h3 className="font-extrabold text-sm text-slate-800">{t('registeredListTitle')}</h3>
-                    <p className="text-[10px] text-red-600 font-bold">
+                    <h3 className="font-extrabold text-sm text-slate-800 flex items-center gap-1.5">
+                      <Ticket className="w-4 h-4 text-red-600" />
+                      <span>{t('registeredListTitle')}</span>
+                    </h3>
+                    <p className="text-[11px] text-red-600 font-bold mt-0.5">
                       {getText(activities.find(a => a.id === viewRegistrantsActivityId)?.title)}
                     </p>
                   </div>
-                  <button type="button" onClick={() => setViewRegistrantsActivityId(null)} className="text-xs font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-slate-700 transition">
+                  <button 
+                    type="button" 
+                    onClick={() => { setViewRegistrantsActivityId(null); setActivityRegSearch(''); }} 
+                    className="text-xs font-bold bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-slate-700 transition"
+                  >
                     &larr; {t('backToNews').replace('news', 'activities')}
                   </button>
                 </div>
 
                 {(() => {
                   const activity = activities.find(a => a.id === viewRegistrantsActivityId);
-                  const list = activity?.registrations || [];
-                  if (list.length === 0) {
-                    return <p className="text-slate-400 text-center py-6 text-xs">{t('noRegistrationsYet')}</p>;
-                  }
+                  const rawList = activity?.registrations || [];
+                  const filteredList = rawList.filter(reg => {
+                    if (!activityRegSearch.trim()) return true;
+                    const q = activityRegSearch.toLowerCase();
+                    return (
+                      (reg.name && reg.name.toLowerCase().includes(q)) ||
+                      (reg.email && reg.email.toLowerCase().includes(q)) ||
+                      (reg.phone && reg.phone.includes(q)) ||
+                      (reg.major && reg.major.toLowerCase().includes(q))
+                    );
+                  });
+
+                  const handleCopyEmails = () => {
+                    const emails = rawList.map(r => r.email).filter(Boolean).join(', ');
+                    navigator.clipboard.writeText(emails);
+                    triggerToast(language === 'ar' ? 'تم نسخ جميع إيميلات المسجلين' : 'Tüm e-postalar kopyalandı');
+                  };
+
+                  const handleExportCSV = () => {
+                    const headers = ['Full Name', 'Major', 'Email', 'Phone', 'Date'];
+                    const rows = rawList.map(r => [
+                      `"${(r.name || '').replace(/"/g, '""')}"`,
+                      `"${(r.major || '').replace(/"/g, '""')}"`,
+                      `"${(r.email || '').replace(/"/g, '""')}"`,
+                      `"${(r.phone || '').replace(/"/g, '""')}"`,
+                      `"${(r.registeredAt || '').replace(/"/g, '""')}"`
+                    ]);
+                    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', encodedUri);
+                    link.setAttribute('download', `activity-registrations-${activity?.id || 'list'}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  };
+
                   return (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="bg-slate-50 border-b border-slate-200">
-                            <th className="p-2.5 font-bold text-slate-700">{t('fullName')}</th>
-                            <th className="p-2.5 font-bold text-slate-700">{t('studentId')}</th>
-                            <th className="p-2.5 font-bold text-slate-700">{t('emailAddress')}</th>
-                            <th className="p-2.5 font-bold text-slate-700">{t('phoneNumber')}</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {list.map((reg, regIdx) => (
-                            <tr key={regIdx} className="hover:bg-slate-50/50">
-                              <td className="p-2.5 text-slate-900 font-bold">{reg.name}</td>
-                              <td className="p-2.5 text-slate-500 font-mono">{reg.studentId}</td>
-                              <td className="p-2.5 text-slate-500">{reg.email}</td>
-                              <td className="p-2.5 text-slate-500 font-mono" dir="ltr">{reg.phone}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="relative flex-1 min-w-[200px]">
+                          <Search className="w-3.5 h-3.5 absolute right-3 top-2.5 text-slate-400" />
+                          <input
+                            type="text"
+                            placeholder={language === 'ar' ? 'بحث بالاسم، التخصص، الإيميل أو الهاتف...' : 'İsim, bölüm, e-posta veya telefon ile ara...'}
+                            value={activityRegSearch}
+                            onChange={(e) => setActivityRegSearch(e.target.value)}
+                            className="w-full text-xs pr-8 pl-3 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-red-600"
+                          />
+                        </div>
+                        {rawList.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={handleCopyEmails}
+                              className="text-[11px] font-bold px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                            >
+                              {language === 'ar' ? 'نسخ الإيميلات' : 'E-postaları Kopyala'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleExportCSV}
+                              className="text-[11px] font-bold px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-xs"
+                            >
+                              {language === 'ar' ? 'تصدير Excel / CSV' : 'CSV İndir'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {rawList.length === 0 ? (
+                        <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                          <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-slate-500 font-bold text-xs">{t('noRegistrationsYet')}</p>
+                          <p className="text-slate-400 text-[11px] mt-1">
+                            {language === 'ar' ? 'أي طالب يسجل حضوره في هذه الفعالية سيظهر هنا فوراً في جميع الأجهزة.' : 'Öğrenciler etkinliğe kayıt yaptığında tüm cihazlarda anında burada görünecektir.'}
+                          </p>
+                        </div>
+                      ) : filteredList.length === 0 ? (
+                        <p className="text-slate-400 text-center py-6 text-xs">{language === 'ar' ? 'لا توجد نتائج تطابق بحثك' : 'Aramanızla eşleşen sonuç bulunamadı'}</p>
+                      ) : (
+                        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700">
+                                <th className="p-2.5 font-bold">#</th>
+                                <th className="p-2.5 font-bold">{t('fullName')}</th>
+                                <th className="p-2.5 font-bold">{language === 'ar' ? 'التخصص' : 'Bölüm'}</th>
+                                <th className="p-2.5 font-bold">{t('emailAddress')}</th>
+                                <th className="p-2.5 font-bold">{t('phoneNumber')}</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {filteredList.map((reg, regIdx) => (
+                                <tr key={regIdx} className="hover:bg-slate-50/70 transition">
+                                  <td className="p-2.5 text-slate-400 font-mono text-[10px]">{regIdx + 1}</td>
+                                  <td className="p-2.5 text-slate-900 font-bold">{reg.name}</td>
+                                  <td className="p-2.5 text-slate-600 font-medium">
+                                    <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px]">{reg.major || '-'}</span>
+                                  </td>
+                                  <td className="p-2.5 text-slate-500 font-mono text-[11px]">
+                                    <a href={`mailto:${reg.email}`} className="text-blue-600 hover:underline">{reg.email}</a>
+                                  </td>
+                                  <td className="p-2.5 text-slate-600 font-mono text-[11px]" dir="ltr">
+                                    <a href={`https://wa.me/${(reg.phone || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-emerald-700 hover:underline">
+                                      {reg.phone}
+                                    </a>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   );
                 })()}

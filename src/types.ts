@@ -53,7 +53,11 @@ export interface CourseItem {
   driveFolders?: DriveFolder[]; // Organized folder hierarchy
   year?: MultilingualText;
   semester?: MultilingualText;
+  registrationEnabled?: boolean;
+  registeredCount?: number;
+  maxSeats?: number;
   registrations?: Array<{ 
+    id?: string;
     name: string; 
     studentId: string; 
     phone: string; 
@@ -61,6 +65,7 @@ export interface CourseItem {
     firstName?: string; 
     lastName?: string; 
     major?: string; 
+    registeredAt?: string;
   }>;
 }
 

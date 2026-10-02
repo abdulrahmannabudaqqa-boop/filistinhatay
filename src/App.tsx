@@ -210,7 +210,66 @@ function AppMain() {
       } catch (e) {}
       return defaultVal;
     };
-    
+
+    // Helper to fetch persistent data from server backup /api/site-data
+    const loadDataFromServer = async () => {
+      try {
+        const res = await fetch('/api/site-data');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.siteData) {
+            const data = json.siteData;
+            if (Array.isArray(data.news) && data.news.length > 0) {
+              setNews(data.news);
+              localStorage.setItem('pales_union_news', JSON.stringify(data.news));
+            }
+            if (Array.isArray(data.directoryMembers) && data.directoryMembers.length > 0) {
+              setDirectoryMembers(data.directoryMembers);
+              localStorage.setItem('pales_union_directory_members', JSON.stringify(data.directoryMembers));
+            }
+            if (Array.isArray(data.courses) && data.courses.length > 0) {
+              setCourses(data.courses);
+              localStorage.setItem('pales_union_courses', JSON.stringify(data.courses));
+            }
+            if (Array.isArray(data.deptAnnouncements) && data.deptAnnouncements.length > 0) {
+              setDeptAnnouncements(data.deptAnnouncements);
+              localStorage.setItem('pales_union_dept_announcements', JSON.stringify(data.deptAnnouncements));
+            }
+            if (Array.isArray(data.activities) && data.activities.length > 0) {
+              setActivities(data.activities);
+              localStorage.setItem('pales_union_activities', JSON.stringify(data.activities));
+            }
+            if (Array.isArray(data.links) && data.links.length > 0) {
+              setLinks(data.links);
+              localStorage.setItem('pales_union_links', JSON.stringify(data.links));
+            }
+            if (data.univInfo) {
+              setUnivInfo(data.univInfo);
+              localStorage.setItem('pales_union_univ_info', JSON.stringify(data.univInfo));
+            }
+            if (Array.isArray(data.announcements) && data.announcements.length > 0) {
+              setAnnouncements(data.announcements);
+              localStorage.setItem('pales_union_announcements', JSON.stringify(data.announcements));
+            }
+            if (data.logo) {
+              setLogo(data.logo);
+              localStorage.setItem('pales_union_custom_logo', data.logo);
+            }
+            if (Array.isArray(data.assistants)) {
+              setAssistants(data.assistants);
+              localStorage.setItem('pales_union_assistants', JSON.stringify(data.assistants));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Initial server data fetch warning:', err);
+      }
+    };
+
+    // 1. Immediately fetch latest server data
+    loadDataFromServer();
+
+    // 2. Real-time Firestore snapshot listener
     const unsubscribe = onSnapshot(docRef, async (docSnap) => {
       try {
         if (docSnap.exists()) {
@@ -325,10 +384,27 @@ function AppMain() {
         console.error('Error in Firestore real-time listener handler:', err);
       }
     }, (error) => {
-      console.error('Firestore snapshot listener failed:', error);
+      console.error('Firestore snapshot listener failed, relying on server polling:', error);
     });
 
-    return () => unsubscribe();
+    // 3. Periodic synchronization every 12 seconds across all devices
+    const pollInterval = setInterval(() => {
+      loadDataFromServer();
+    }, 12000);
+
+    // 4. Tab visibility change sync (when user returns to tab)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        loadDataFromServer();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      unsubscribe();
+      clearInterval(pollInterval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   // Ensure the default tab is always 'home' upon entering the website, while supporting in-page navigation
@@ -565,7 +641,7 @@ function AppMain() {
         const currentRegs = act.registrations || [];
         return {
           ...act,
-          registeredCount: act.registeredCount + 1,
+          registeredCount: (act.registeredCount || 0) + 1,
           registrations: [regData, ...currentRegs]
         };
       }
@@ -574,6 +650,20 @@ function AppMain() {
 
     if (success) {
       updateActivitiesState(updatedActs);
+
+      // Dedicated server endpoint call to persist reliably across all devices
+      fetch('/api/register-activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activityId, registration: regData })
+      })
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.activity) {
+          setActivities(prev => prev.map(a => a.id === activityId ? json.activity : a));
+        }
+      })
+      .catch(err => console.warn('Could not post to /api/register-activity:', err));
     }
     return success;
   };
@@ -598,6 +688,7 @@ function AppMain() {
         const currentRegs = course.registrations || [];
         return {
           ...course,
+          registeredCount: (course.registeredCount || currentRegs.length) + 1,
           registrations: [regData, ...currentRegs]
         };
       }
@@ -606,6 +697,20 @@ function AppMain() {
 
     if (success) {
       updateCoursesState(updatedCourses);
+
+      // Dedicated server endpoint call to persist reliably across all devices
+      fetch('/api/register-course', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId, registration: regData })
+      })
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.course) {
+          setCourses(prev => prev.map(c => c.id === courseId ? json.course : c));
+        }
+      })
+      .catch(err => console.warn('Could not post to /api/register-course:', err));
     }
     return success;
   };
