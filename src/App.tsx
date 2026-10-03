@@ -269,84 +269,61 @@ function AppMain() {
     // 1. Immediately fetch latest server data
     loadDataFromServer();
 
+    // BroadcastChannel for instant cross-tab sync on same machine
+    let bc: BroadcastChannel | null = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        bc = new BroadcastChannel('pales_portal_sync');
+        bc.onmessage = () => {
+          loadDataFromServer();
+        };
+      }
+    } catch (e) {}
+
     // 2. Real-time Firestore snapshot listener
     const unsubscribe = onSnapshot(docRef, async (docSnap) => {
       try {
         if (docSnap.exists()) {
           const data = docSnap.data();
-          const missingFieldsToSeed: Record<string, any> = {};
 
           if (data.news && Array.isArray(data.news)) {
             setNews(data.news);
             localStorage.setItem('pales_union_news', JSON.stringify(data.news));
-          } else {
-            const preservedNews = getSavedOrDefault('pales_union_news', initialNews);
-            missingFieldsToSeed.news = preservedNews;
-            setNews(preservedNews);
           }
 
           if (data.directoryMembers && Array.isArray(data.directoryMembers)) {
             setDirectoryMembers(data.directoryMembers);
             localStorage.setItem('pales_union_directory_members', JSON.stringify(data.directoryMembers));
-          } else {
-            const preservedMembers = getSavedOrDefault('pales_union_directory_members', initialDirectoryMembers);
-            missingFieldsToSeed.directoryMembers = preservedMembers;
-            setDirectoryMembers(preservedMembers);
-            localStorage.setItem('pales_union_directory_members', JSON.stringify(preservedMembers));
           }
 
           if (data.courses && Array.isArray(data.courses)) {
             setCourses(data.courses);
             localStorage.setItem('pales_union_courses', JSON.stringify(data.courses));
-          } else {
-            const preservedCourses = getSavedOrDefault('pales_union_courses', initialCourses);
-            missingFieldsToSeed.courses = preservedCourses;
-            setCourses(preservedCourses);
           }
 
           if (data.deptAnnouncements && Array.isArray(data.deptAnnouncements)) {
             setDeptAnnouncements(data.deptAnnouncements);
             localStorage.setItem('pales_union_dept_announcements', JSON.stringify(data.deptAnnouncements));
-          } else {
-            const preservedDeptAnns = getSavedOrDefault('pales_union_dept_announcements', initialDeptAnnouncements);
-            missingFieldsToSeed.deptAnnouncements = preservedDeptAnns;
-            setDeptAnnouncements(preservedDeptAnns);
           }
 
           if (data.activities && Array.isArray(data.activities)) {
             setActivities(data.activities);
             localStorage.setItem('pales_union_activities', JSON.stringify(data.activities));
-          } else {
-            const preservedActivities = getSavedOrDefault('pales_union_activities', initialActivities);
-            missingFieldsToSeed.activities = preservedActivities;
-            setActivities(preservedActivities);
           }
 
           if (data.links && Array.isArray(data.links)) {
             setLinks(data.links);
             localStorage.setItem('pales_union_links', JSON.stringify(data.links));
-          } else {
-            const preservedLinks = getSavedOrDefault('pales_union_links', initialImportantLinks);
-            missingFieldsToSeed.links = preservedLinks;
-            setLinks(preservedLinks);
           }
 
           if (data.univInfo) {
             setUnivInfo(data.univInfo);
             localStorage.setItem('pales_union_univ_info', JSON.stringify(data.univInfo));
-          } else {
-            const preservedUniv = getSavedOrDefault('pales_union_univ_info', initialUniversityInfo);
-            missingFieldsToSeed.univInfo = preservedUniv;
-            setUnivInfo(preservedUniv);
           }
 
           if (data.announcements && Array.isArray(data.announcements)) {
             setAnnouncements(data.announcements);
             localStorage.setItem('pales_union_announcements', JSON.stringify(data.announcements));
-          } else {
-            const preservedAnns = getSavedOrDefault('pales_union_announcements', initialAnnouncements);
-            missingFieldsToSeed.announcements = preservedAnns;
-            setAnnouncements(preservedAnns);
           }
 
           if (data.logo) {
@@ -358,27 +335,6 @@ function AppMain() {
             setAssistants(data.assistants);
             localStorage.setItem('pales_union_assistants', JSON.stringify(data.assistants));
           }
-
-          // If any column/field was missing in Firestore, sync it immediately
-          if (Object.keys(missingFieldsToSeed).length > 0) {
-            console.log('Preserving admin data and syncing to Firestore database:', Object.keys(missingFieldsToSeed));
-            await setDoc(docRef, sanitizeForFirestore(missingFieldsToSeed), { merge: true });
-          }
-        } else {
-          // Document does not exist yet. Seed it with any locally preserved admin data first!
-          const seedPayload = {
-            news: getSavedOrDefault('pales_union_news', initialNews),
-            directoryMembers: getSavedOrDefault('pales_union_directory_members', initialDirectoryMembers),
-            courses: getSavedOrDefault('pales_union_courses', initialCourses),
-            deptAnnouncements: getSavedOrDefault('pales_union_dept_announcements', initialDeptAnnouncements),
-            activities: getSavedOrDefault('pales_union_activities', initialActivities),
-            links: getSavedOrDefault('pales_union_links', initialImportantLinks),
-            univInfo: getSavedOrDefault('pales_union_univ_info', initialUniversityInfo),
-            announcements: getSavedOrDefault('pales_union_announcements', initialAnnouncements),
-            logo: localStorage.getItem('pales_union_custom_logo') || logoImg,
-            assistants: getSavedOrDefault('pales_union_assistants', [])
-          };
-          await setDoc(docRef, sanitizeForFirestore(seedPayload));
         }
       } catch (err) {
         console.error('Error in Firestore real-time listener handler:', err);
@@ -387,23 +343,31 @@ function AppMain() {
       console.error('Firestore snapshot listener failed, relying on server polling:', error);
     });
 
-    // 3. Periodic synchronization every 12 seconds across all devices
+    // 3. Periodic synchronization every 4 seconds across all devices
     const pollInterval = setInterval(() => {
       loadDataFromServer();
-    }, 12000);
+    }, 4000);
 
-    // 4. Tab visibility change sync (when user returns to tab)
+    // 4. Tab visibility change & focus sync (when user returns to tab or switches back)
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         loadDataFromServer();
       }
     };
+    const handleFocus = () => {
+      loadDataFromServer();
+    };
     document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleFocus);
 
     return () => {
       unsubscribe();
       clearInterval(pollInterval);
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleFocus);
+      if (bc) {
+        try { bc.close(); } catch (e) {}
+      }
     };
   }, []);
 
@@ -632,7 +596,7 @@ function AppMain() {
     }
   ): boolean => {
     let success = false;
-    const updatedActs = activities.map(act => {
+    const optimisticActs = activities.map(act => {
       if (act.id === activityId) {
         if (!act.registrationEnabled) return act;
         if (act.maxSeats && act.registeredCount >= act.maxSeats) return act;
@@ -649,7 +613,8 @@ function AppMain() {
     });
 
     if (success) {
-      updateActivitiesState(updatedActs);
+      setActivities(optimisticActs);
+      localStorage.setItem('pales_union_activities', JSON.stringify(optimisticActs));
 
       // Dedicated server endpoint call to persist reliably across all devices
       fetch('/api/register-activity', {
@@ -659,9 +624,22 @@ function AppMain() {
       })
       .then(res => res.json())
       .then(json => {
-        if (json.success && json.activity) {
-          setActivities(prev => prev.map(a => a.id === activityId ? json.activity : a));
+        if (json.success && json.activities) {
+          setActivities(json.activities);
+          localStorage.setItem('pales_union_activities', JSON.stringify(json.activities));
+        } else if (json.success && json.activity) {
+          setActivities(prev => {
+            const next = prev.map(a => a.id === activityId ? json.activity : a);
+            localStorage.setItem('pales_union_activities', JSON.stringify(next));
+            return next;
+          });
         }
+        // Broadcast cross-tab
+        try {
+          const bc = new BroadcastChannel('pales_portal_sync');
+          bc.postMessage({ type: 'REGISTER_ACTIVITY' });
+          bc.close();
+        } catch (e) {}
       })
       .catch(err => console.warn('Could not post to /api/register-activity:', err));
     }
@@ -682,7 +660,7 @@ function AppMain() {
     }
   ): boolean => {
     let success = false;
-    const updatedCourses = courses.map(course => {
+    const optimisticCourses = courses.map(course => {
       if (course.id === courseId) {
         success = true;
         const currentRegs = course.registrations || [];
@@ -696,7 +674,8 @@ function AppMain() {
     });
 
     if (success) {
-      updateCoursesState(updatedCourses);
+      setCourses(optimisticCourses);
+      localStorage.setItem('pales_union_courses', JSON.stringify(optimisticCourses));
 
       // Dedicated server endpoint call to persist reliably across all devices
       fetch('/api/register-course', {
@@ -706,9 +685,22 @@ function AppMain() {
       })
       .then(res => res.json())
       .then(json => {
-        if (json.success && json.course) {
-          setCourses(prev => prev.map(c => c.id === courseId ? json.course : c));
+        if (json.success && json.courses) {
+          setCourses(json.courses);
+          localStorage.setItem('pales_union_courses', JSON.stringify(json.courses));
+        } else if (json.success && json.course) {
+          setCourses(prev => {
+            const next = prev.map(c => c.id === courseId ? json.course : c);
+            localStorage.setItem('pales_union_courses', JSON.stringify(next));
+            return next;
+          });
         }
+        // Broadcast cross-tab
+        try {
+          const bc = new BroadcastChannel('pales_portal_sync');
+          bc.postMessage({ type: 'REGISTER_COURSE' });
+          bc.close();
+        } catch (e) {}
       })
       .catch(err => console.warn('Could not post to /api/register-course:', err));
     }

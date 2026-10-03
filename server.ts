@@ -179,6 +179,61 @@ async function startServer() {
         }
       }
 
+      // Helper to merge registrations safely without losing existing students
+      const mergeRegistrationsSafe = (oldRegs: any[] = [], newRegs: any[] = []) => {
+        const map = new Map<string, any>();
+        oldRegs.forEach((r: any) => {
+          if (!r) return;
+          const key = r.id || `${(r.email || '').trim().toLowerCase()}_${(r.phone || '').trim()}_${(r.name || '').trim()}`;
+          map.set(key, r);
+        });
+        newRegs.forEach((r: any) => {
+          if (!r) return;
+          const key = r.id || `${(r.email || '').trim().toLowerCase()}_${(r.phone || '').trim()}_${(r.name || '').trim()}`;
+          // Keep existing registration with date/id if available, or update
+          if (map.has(key)) {
+            map.set(key, { ...map.get(key), ...r });
+          } else {
+            map.set(key, r);
+          }
+        });
+        return Array.from(map.values());
+      };
+
+      // If courses are updated by admin, do not wipe existing student registrations
+      if (Array.isArray(updates.courses) && Array.isArray(currentData.courses)) {
+        updates.courses = updates.courses.map((newCourse: any) => {
+          const oldCourse = currentData.courses.find((c: any) => c.id === newCourse.id);
+          if (oldCourse && Array.isArray(oldCourse.registrations) && oldCourse.registrations.length > 0) {
+            const incomingRegs = Array.isArray(newCourse.registrations) ? newCourse.registrations : [];
+            const mergedRegs = mergeRegistrationsSafe(oldCourse.registrations, incomingRegs);
+            return {
+              ...newCourse,
+              registrations: mergedRegs,
+              registeredCount: Math.max(mergedRegs.length, newCourse.registeredCount || 0, oldCourse.registeredCount || 0)
+            };
+          }
+          return newCourse;
+        });
+      }
+
+      // If activities are updated by admin, do not wipe existing student registrations
+      if (Array.isArray(updates.activities) && Array.isArray(currentData.activities)) {
+        updates.activities = updates.activities.map((newAct: any) => {
+          const oldAct = currentData.activities.find((a: any) => a.id === newAct.id);
+          if (oldAct && Array.isArray(oldAct.registrations) && oldAct.registrations.length > 0) {
+            const incomingRegs = Array.isArray(newAct.registrations) ? newAct.registrations : [];
+            const mergedRegs = mergeRegistrationsSafe(oldAct.registrations, incomingRegs);
+            return {
+              ...newAct,
+              registrations: mergedRegs,
+              registeredCount: Math.max(mergedRegs.length, newAct.registeredCount || 0, oldAct.registeredCount || 0)
+            };
+          }
+          return newAct;
+        });
+      }
+
       const mergedData = { ...currentData, ...updates };
 
       // Save to disk first for durability
@@ -193,12 +248,18 @@ async function startServer() {
         try {
           const docRef = doc(db, 'portal_data', 'global_settings');
           await setDoc(docRef, mergedData, { merge: true });
+          if (updates.courses) {
+            await setDoc(doc(db, 'portal_data', 'courses'), { list: mergedData.courses }, { merge: true });
+          }
+          if (updates.activities) {
+            await setDoc(doc(db, 'portal_data', 'activities'), { list: mergedData.activities }, { merge: true });
+          }
         } catch (dbErr) {
           console.error('Firestore save failed in /api/site-data:', dbErr);
         }
       }
 
-      res.json({ success: true });
+      res.json({ success: true, siteData: mergedData });
     } catch (err) {
       console.error('Error saving site data:', err);
       res.status(500).json({ success: false, error: 'Failed to save site data' });
@@ -236,15 +297,28 @@ async function startServer() {
       const updatedCourses = courses.map((c: any) => {
         if (c.id === courseId) {
           const currentRegs = Array.isArray(c.registrations) ? c.registrations : [];
+          // Deduplicate by email and phone
+          const regEmail = (registration.email || '').trim().toLowerCase();
+          const regPhone = (registration.phone || '').trim();
+          const alreadyExists = currentRegs.some((r: any) => 
+            (regEmail && (r.email || '').trim().toLowerCase() === regEmail) ||
+            (regPhone && (r.phone || '').trim() === regPhone)
+          );
+
           const newReg = {
             ...registration,
             id: `reg-course-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
             registeredAt: new Date().toISOString()
           };
+
+          const mergedRegs = alreadyExists 
+            ? currentRegs.map((r: any) => ((regEmail && (r.email || '').trim().toLowerCase() === regEmail) || (regPhone && (r.phone || '').trim() === regPhone)) ? { ...r, ...registration } : r)
+            : [newReg, ...currentRegs];
+
           updatedCourse = {
             ...c,
-            registeredCount: (c.registeredCount || currentRegs.length) + 1,
-            registrations: [newReg, ...currentRegs]
+            registeredCount: mergedRegs.length,
+            registrations: mergedRegs
           };
           return updatedCourse;
         }
@@ -265,12 +339,13 @@ async function startServer() {
         try {
           const docRef = doc(db, 'portal_data', 'global_settings');
           await setDoc(docRef, { courses: updatedCourses }, { merge: true });
+          await setDoc(doc(db, 'portal_data', 'courses'), { list: updatedCourses }, { merge: true });
         } catch (dbErr) {
           console.error('Firestore save failed in register-course:', dbErr);
         }
       }
 
-      return res.json({ success: true, course: updatedCourse });
+      return res.json({ success: true, course: updatedCourse, courses: updatedCourses });
     } catch (err: any) {
       console.error('Error in /api/register-course:', err);
       res.status(500).json({ success: false, error: err.message });
@@ -308,15 +383,27 @@ async function startServer() {
       const updatedActivities = activities.map((a: any) => {
         if (a.id === activityId) {
           const currentRegs = Array.isArray(a.registrations) ? a.registrations : [];
+          const regEmail = (registration.email || '').trim().toLowerCase();
+          const regPhone = (registration.phone || '').trim();
+          const alreadyExists = currentRegs.some((r: any) => 
+            (regEmail && (r.email || '').trim().toLowerCase() === regEmail) ||
+            (regPhone && (r.phone || '').trim() === regPhone)
+          );
+
           const newReg = {
             ...registration,
             id: `reg-act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
             registeredAt: new Date().toISOString()
           };
+
+          const mergedRegs = alreadyExists 
+            ? currentRegs.map((r: any) => ((regEmail && (r.email || '').trim().toLowerCase() === regEmail) || (regPhone && (r.phone || '').trim() === regPhone)) ? { ...r, ...registration } : r)
+            : [newReg, ...currentRegs];
+
           updatedActivity = {
             ...a,
-            registeredCount: (a.registeredCount || 0) + 1,
-            registrations: [newReg, ...currentRegs]
+            registeredCount: mergedRegs.length,
+            registrations: mergedRegs
           };
           return updatedActivity;
         }
@@ -337,12 +424,13 @@ async function startServer() {
         try {
           const docRef = doc(db, 'portal_data', 'global_settings');
           await setDoc(docRef, { activities: updatedActivities }, { merge: true });
+          await setDoc(doc(db, 'portal_data', 'activities'), { list: updatedActivities }, { merge: true });
         } catch (dbErr) {
           console.error('Firestore save failed in register-activity:', dbErr);
         }
       }
 
-      return res.json({ success: true, activity: updatedActivity });
+      return res.json({ success: true, activity: updatedActivity, activities: updatedActivities });
     } catch (err: any) {
       console.error('Error in /api/register-activity:', err);
       res.status(500).json({ success: false, error: err.message });

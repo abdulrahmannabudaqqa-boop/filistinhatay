@@ -129,6 +129,15 @@ export const CoursesSection: React.FC<CoursesSectionProps> = ({ courses, registe
   const [sharingItem, setSharingItem] = useState<{ id: string; title: string; type: 'activity' | 'course' } | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // View Registrants Modal State
+  const [viewingRegistrantsCourse, setViewingRegistrantsCourse] = useState<CourseItem | null>(null);
+  const [courseRegSearchQuery, setCourseRegSearchQuery] = useState('');
+
+  const handleOpenRegistrants = (item: CourseItem) => {
+    setViewingRegistrantsCourse(item);
+    setCourseRegSearchQuery('');
+  };
+
   // Automatically open the correct faculty and department for shared course links
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -440,6 +449,7 @@ export const CoursesSection: React.FC<CoursesSectionProps> = ({ courses, registe
                       handleDownloadFileObj={handleDownloadFileObj}
                       onShare={handleOpenShare}
                       onRegister={registerForCourse ? handleOpenRegistration : undefined}
+                      onViewRegistrants={handleOpenRegistrants}
                     />
                   ))}
                 </div>
@@ -585,6 +595,7 @@ export const CoursesSection: React.FC<CoursesSectionProps> = ({ courses, registe
                           handleDownloadFileObj={handleDownloadFileObj}
                           onShare={handleOpenShare}
                           onRegister={registerForCourse ? handleOpenRegistration : undefined}
+                          onViewRegistrants={handleOpenRegistrants}
                         />
                       ))}
                     </div>
@@ -770,6 +781,161 @@ export const CoursesSection: React.FC<CoursesSectionProps> = ({ courses, registe
         )}
       </AnimatePresence>
 
+      {/* Course Registered Students Modal */}
+      <AnimatePresence>
+        {viewingRegistrantsCourse && (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              id="course-registrants-modal"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-2xl max-w-lg w-full border-2 border-burgundy-700/25 shadow-2xl overflow-hidden relative"
+            >
+              <div className="h-1.5 bg-gradient-to-r from-burgundy-700 via-red-600 to-amber-500 w-full" />
+              <div className="p-5 border-b border-slate-150 flex items-start justify-between bg-slate-50/70">
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-1.5">
+                    <GraduationCap className="w-4 h-4 text-burgundy-700" />
+                    <span>{t('registeredCourseListTitle')}</span>
+                  </h3>
+                  <p className="text-xs text-burgundy-700 font-extrabold mt-0.5">
+                    {getText(viewingRegistrantsCourse.title)}
+                  </p>
+                </div>
+                <button
+                  id="close-course-registrants-modal"
+                  onClick={() => setViewingRegistrantsCourse(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer text-xl font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Search & Stats Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="relative flex-1 min-w-[180px]">
+                    <Search className="w-3.5 h-3.5 absolute right-3 top-2.5 text-slate-400" />
+                    <input
+                      type="text"
+                      value={courseRegSearchQuery}
+                      onChange={(e) => setCourseRegSearchQuery(e.target.value)}
+                      placeholder={language === 'ar' ? 'بحث باسم الطالب أو التخصص...' : 'Öğrenci adı veya bölüme göre ara...'}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-9 pl-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-burgundy-700 font-medium"
+                    />
+                  </div>
+                  <span className="text-[11px] font-extrabold text-slate-600 bg-burgundy-50 px-2.5 py-1 rounded-lg border border-burgundy-100">
+                    {language === 'ar' ? 'إجمالي المسجلين:' : 'Toplam Kayıt:'}{' '}
+                    <strong className="text-burgundy-700">{(viewingRegistrantsCourse.registrations || []).length}</strong>
+                  </span>
+                </div>
+
+                {/* List Container */}
+                {(() => {
+                  const rawList = viewingRegistrantsCourse.registrations || [];
+                  const filtered = rawList.filter(reg => {
+                    if (!courseRegSearchQuery.trim()) return true;
+                    const q = courseRegSearchQuery.toLowerCase();
+                    return (
+                      (reg.name && reg.name.toLowerCase().includes(q)) ||
+                      (reg.major && reg.major.toLowerCase().includes(q)) ||
+                      (reg.email && reg.email.toLowerCase().includes(q))
+                    );
+                  });
+
+                  if (rawList.length === 0) {
+                    return (
+                      <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 space-y-3">
+                        <Users className="w-8 h-8 text-slate-300 mx-auto" />
+                        <p className="text-xs text-slate-500 font-bold">
+                          {t('noRegistrationsYet')}
+                        </p>
+                        {registerForCourse && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const targetCourse = viewingRegistrantsCourse;
+                              setViewingRegistrantsCourse(null);
+                              handleOpenRegistration(targetCourse);
+                            }}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-burgundy-700 hover:bg-burgundy-800 text-white rounded-lg text-xs font-bold transition shadow-xs"
+                          >
+                            <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                            <span>{t('registerInCourse')}</span>
+                          </button>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="text-center py-6 text-slate-400 text-xs font-bold">
+                        {language === 'ar' ? 'لا توجد نتائج مطابقة لبحثك.' : 'Aramanızla eşleşen sonuç bulunamadı.'}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 divide-y divide-slate-100">
+                      {filtered.map((student, idx) => (
+                        <div key={student.id || idx} className="pt-2 first:pt-0 flex items-center justify-between gap-3 text-xs">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="w-6 h-6 rounded-full bg-burgundy-50 text-burgundy-700 font-extrabold flex items-center justify-center text-[10px] shrink-0 border border-burgundy-200/50">
+                              {idx + 1}
+                            </span>
+                            <div className="truncate">
+                              <p className="font-extrabold text-slate-900 truncate">
+                                {student.name || `${student.firstName || ''} ${student.lastName || ''}`}
+                              </p>
+                              <p className="text-[10px] text-slate-500 font-semibold truncate">
+                                {student.major || (language === 'ar' ? 'طالب جامعي' : 'Üniversite Öğrencisi')}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-[10px] text-slate-400 font-semibold shrink-0 text-left">
+                            <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold border border-emerald-100">
+                              ✓ {language === 'ar' ? 'مسجل حضور' : 'Kayıtlı'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Footer buttons */}
+                <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setViewingRegistrantsCourse(null)}
+                    className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                  >
+                    {language === 'ar' ? 'إغلاق' : 'Kapat'}
+                  </button>
+                  {registerForCourse && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetCourse = viewingRegistrantsCourse;
+                        setViewingRegistrantsCourse(null);
+                        handleOpenRegistration(targetCourse);
+                      }}
+                      className="px-4 py-1.5 bg-burgundy-700 hover:bg-burgundy-800 text-white text-xs font-bold rounded-xl transition shadow-xs flex items-center gap-1"
+                    >
+                      <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{t('registerInCourse')}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Course Share Modal Dialog */}
       <AnimatePresence>
         {sharingItem && (
@@ -911,12 +1077,13 @@ interface CourseCardProps {
   handleDownloadFileObj: (file: any) => void;
   onShare: (id: string, title: string) => void;
   onRegister?: (item: CourseItem) => void;
+  onViewRegistrants?: (item: CourseItem) => void;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({
   item, getText, language, t, expandedFolders, toggleFolder,
   downloadingFileId, downloadSuccessFileId, downloadingFileObjId, downloadSuccessFileObjId,
-  handleDownloadFile, handleDownloadFileObj, onShare, onRegister
+  handleDownloadFile, handleDownloadFileObj, onShare, onRegister, onViewRegistrants
 }) => {
   return (
     <div id={`course-card-${item.id}`} className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-xs hover:border-burgundy-700/30 hover:shadow-sm transition duration-300 flex flex-col justify-between space-y-5 relative overflow-hidden group">
@@ -1108,6 +1275,21 @@ const CourseCard: React.FC<CourseCardProps> = ({
               <span>{t('registerInCourse')}</span>
             </button>
           )}
+
+          {/* View Registrants Button */}
+          <button
+            id={`view-regs-course-${item.id}`}
+            type="button"
+            onClick={() => onViewRegistrants && onViewRegistrants(item)}
+            className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-800 text-[10px] font-extrabold transition duration-150 cursor-pointer border border-burgundy-200/60"
+            title={t('viewRegistrants')}
+          >
+            <Users className="w-3.5 h-3.5 text-burgundy-700 shrink-0" />
+            <span>{t('viewRegistrants')}</span>
+            <span className="bg-burgundy-700 text-white rounded-full px-1.5 py-0.2 text-[9px] font-bold">
+              {item.registrations?.length || item.registeredCount || 0}
+            </span>
+          </button>
         </div>
 
         <span className="flex items-center gap-1 self-start sm:self-auto text-slate-400 mt-1 sm:mt-0">

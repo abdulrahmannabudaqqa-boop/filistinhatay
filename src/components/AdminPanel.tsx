@@ -3,7 +3,8 @@ import { NewsItem, CourseItem, DeptAnnouncementItem, ActivityItem, ImportantLink
 import { useLanguage } from '../context/LanguageContext';
 import { 
   Plus, Edit2, Trash2, Save, FileText, Newspaper, BookOpen, Bell,
-  Ticket, Link2, Building2, Megaphone, CheckCircle2, AlertTriangle, Users, Eye, Crop, GraduationCap, Tag, Search, MapPin, Globe, RefreshCw
+  Ticket, Link2, Building2, Megaphone, CheckCircle2, AlertTriangle, Users, Eye, Crop, GraduationCap, Tag, Search, MapPin, Globe, RefreshCw,
+  Mail, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ImageCropperModal } from './ImageCropperModal';
@@ -55,7 +56,7 @@ interface AdminPanelProps {
   onSaveAssistants: (updated: any[]) => void;
 }
 
-type AdminTab = 'news' | 'directory' | 'cityGuide' | 'courses' | 'deptAnnouncements' | 'activities' | 'links' | 'univ' | 'announcements' | 'logo' | 'assistants';
+type AdminTab = 'news' | 'directory' | 'cityGuide' | 'courses' | 'deptAnnouncements' | 'activities' | 'allRegistrations' | 'links' | 'univ' | 'announcements' | 'logo' | 'assistants';
 
 const DEFAULT_FACULTIES = [
   {
@@ -224,6 +225,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [viewRegistrantsCourseId, setViewRegistrantsCourseId] = useState<string | null>(null);
   const [courseRegSearch, setCourseRegSearch] = useState('');
   const [activityRegSearch, setActivityRegSearch] = useState('');
+
+  // Master Registrations State
+  const [allRegsSearch, setAllRegsSearch] = useState('');
+  const [allRegsFilter, setAllRegsFilter] = useState<'all' | 'courses' | 'activities'>('all');
 
   const [isSyncingUnivNews, setIsSyncingUnivNews] = useState(false);
 
@@ -859,6 +864,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     { id: 'courses', label: t('tabCourses'), icon: <BookOpen className="w-4 h-4" /> },
     { id: 'deptAnnouncements', label: t('tabDeptAnnouncements'), icon: <Bell className="w-4 h-4" /> },
     { id: 'activities', label: t('tabActivities'), icon: <Ticket className="w-4 h-4" /> },
+    { id: 'allRegistrations', label: language === 'ar' ? 'سجل كافة المسجلين' : 'Tüm Kayıtlar', icon: <Users className="w-4 h-4" /> },
     { id: 'links', label: t('tabLinks'), icon: <Link2 className="w-4 h-4" /> },
     { id: 'univ', label: t('tabUniv'), icon: <Building2 className="w-4 h-4" /> },
     { id: 'announcements', label: t('tabAnnouncements'), icon: <Megaphone className="w-4 h-4" /> },
@@ -916,6 +922,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               setEditUnivInfo(null);
               setEditAnnItem(null);
               setViewRegistrantsActivityId(null);
+              setViewRegistrantsCourseId(null);
             }}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition duration-150 ${
               activeTab === tab.id
@@ -2927,6 +2934,267 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* 3.5. ALL REGISTRATIONS MASTER TAB */}
+        {activeTab === 'allRegistrations' && (
+          <div id="admin-tab-all-regs-content" className="space-y-5">
+            {/* Header & Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-150 pb-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-red-600" />
+                  <span>{language === 'ar' ? 'سجل كافة الطلاب المسجلين (دورات وفعاليات)' : 'Tüm Kayıtlı Öğrenciler (Dersler ve Etkinlikler)'}</span>
+                </h3>
+                <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                  {language === 'ar' ? 'عرض موحد وشامل لجميع بيانات الطلاب المسجلين لحضور المواد والفعاليات' : 'Tüm ders ve etkinlik kayıtlarının birleşik listesi'}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const emails: string[] = [];
+                    courses.forEach(c => (c.registrations || []).forEach(r => r.email && emails.push(r.email)));
+                    activities.forEach(a => (a.registrations || []).forEach(r => r.email && emails.push(r.email)));
+                    const unique = Array.from(new Set(emails));
+                    navigator.clipboard.writeText(unique.join(', '));
+                    triggerToast(language === 'ar' ? `تم نسخ ${unique.length} إيميل بنجاح` : `${unique.length} e-posta kopyalandı`);
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1"
+                >
+                  <Mail className="w-3.5 h-3.5 text-slate-600" />
+                  <span>{language === 'ar' ? 'نسخ كافة الإيميلات' : 'Tüm E-postaları Kopyala'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const headers = ['Type', 'Item Title', 'Full Name', 'Major', 'Email', 'Phone', 'Date'];
+                    const rows: string[][] = [];
+                    courses.forEach(c => {
+                      const tStr = getText(c.title);
+                      (c.registrations || []).forEach(r => {
+                        rows.push([
+                          'مادة / كورس',
+                          `"${tStr.replace(/"/g, '""')}"`,
+                          `"${(r.name || '').replace(/"/g, '""')}"`,
+                          `"${(r.major || '').replace(/"/g, '""')}"`,
+                          `"${(r.email || '').replace(/"/g, '""')}"`,
+                          `"${(r.phone || '').replace(/"/g, '""')}"`,
+                          `"${(r.registeredAt || '').replace(/"/g, '""')}"`
+                        ]);
+                      });
+                    });
+                    activities.forEach(a => {
+                      const tStr = getText(a.title);
+                      (a.registrations || []).forEach(r => {
+                        rows.push([
+                          'فعالية',
+                          `"${tStr.replace(/"/g, '""')}"`,
+                          `"${(r.name || '').replace(/"/g, '""')}"`,
+                          `"${(r.major || '').replace(/"/g, '""')}"`,
+                          `"${(r.email || '').replace(/"/g, '""')}"`,
+                          `"${(r.phone || '').replace(/"/g, '""')}"`,
+                          `"${(r.registeredAt || '').replace(/"/g, '""')}"`
+                        ]);
+                      });
+                    });
+                    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', encodedUri);
+                    link.setAttribute('download', `all-portal-registrations-${new Date().toISOString().split('T')[0]}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white text-xs font-bold rounded-lg transition flex items-center gap-1 shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{language === 'ar' ? 'تصدير كملف Excel (CSV)' : 'Excel (CSV) Olarak İndir'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Filter Counters & Table */}
+            {(() => {
+              const allItems: Array<{
+                id: string;
+                type: 'course' | 'activity';
+                typeLabel: string;
+                itemTitle: string;
+                name: string;
+                major: string;
+                email: string;
+                phone: string;
+                date: string;
+              }> = [];
+
+              courses.forEach(c => {
+                const cTitle = getText(c.title);
+                (c.registrations || []).forEach((r, idx) => {
+                  allItems.push({
+                    id: r.id || `cr-${c.id}-${idx}`,
+                    type: 'course',
+                    typeLabel: language === 'ar' ? 'درس / مساق' : 'Ders',
+                    itemTitle: cTitle,
+                    name: r.name || `${r.firstName || ''} ${r.lastName || ''}`.trim() || 'طالب',
+                    major: r.major || (c.department ? getText(c.department) : ''),
+                    email: r.email || '',
+                    phone: r.phone || '',
+                    date: r.registeredAt || c.dateAdded || ''
+                  });
+                });
+              });
+
+              activities.forEach(a => {
+                const aTitle = getText(a.title);
+                (a.registrations || []).forEach((r, idx) => {
+                  allItems.push({
+                    id: r.id || `ar-${a.id}-${idx}`,
+                    type: 'activity',
+                    typeLabel: language === 'ar' ? 'فعالية' : 'Etkinlik',
+                    itemTitle: aTitle,
+                    name: r.name || `${r.firstName || ''} ${r.lastName || ''}`.trim() || 'طالب',
+                    major: r.major || '',
+                    email: r.email || '',
+                    phone: r.phone || '',
+                    date: r.registeredAt || a.date || ''
+                  });
+                });
+              });
+
+              const courseRegCount = allItems.filter(i => i.type === 'course').length;
+              const actRegCount = allItems.filter(i => i.type === 'activity').length;
+
+              const filtered = allItems.filter(item => {
+                if (allRegsFilter === 'courses' && item.type !== 'course') return false;
+                if (allRegsFilter === 'activities' && item.type !== 'activity') return false;
+                if (!allRegsSearch.trim()) return true;
+                const q = allRegsSearch.toLowerCase();
+                return (
+                  item.name.toLowerCase().includes(q) ||
+                  item.major.toLowerCase().includes(q) ||
+                  item.email.toLowerCase().includes(q) ||
+                  item.phone.includes(q) ||
+                  item.itemTitle.toLowerCase().includes(q)
+                );
+              });
+
+              return (
+                <div className="space-y-4">
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div 
+                      onClick={() => setAllRegsFilter('all')}
+                      className={`p-3 rounded-xl border cursor-pointer transition ${
+                        allRegsFilter === 'all' ? 'bg-red-50/70 border-red-300 ring-2 ring-red-500/20' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <p className="text-[11px] font-bold text-slate-500">{language === 'ar' ? 'إجمالي التسجيلات' : 'Toplam Kayıtlar'}</p>
+                      <p className="text-xl font-black text-slate-900 mt-0.5">{allItems.length}</p>
+                    </div>
+
+                    <div 
+                      onClick={() => setAllRegsFilter('courses')}
+                      className={`p-3 rounded-xl border cursor-pointer transition ${
+                        allRegsFilter === 'courses' ? 'bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <p className="text-[11px] font-bold text-slate-500">{language === 'ar' ? 'تسجيلات الدروس والمواد' : 'Ders Kayıtları'}</p>
+                      <p className="text-xl font-black text-blue-700 mt-0.5">{courseRegCount}</p>
+                    </div>
+
+                    <div 
+                      onClick={() => setAllRegsFilter('activities')}
+                      className={`p-3 rounded-xl border cursor-pointer transition ${
+                        allRegsFilter === 'activities' ? 'bg-emerald-50/70 border-emerald-300 ring-2 ring-emerald-500/20' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <p className="text-[11px] font-bold text-slate-500">{language === 'ar' ? 'تسجيلات الفعاليات والأنشطة' : 'Etkinlik Kayıtları'}</p>
+                      <p className="text-xl font-black text-emerald-700 mt-0.5">{actRegCount}</p>
+                    </div>
+                  </div>
+
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search className="w-4 h-4 absolute right-3 top-3 text-slate-400" />
+                    <input
+                      type="text"
+                      value={allRegsSearch}
+                      onChange={(e) => setAllRegsSearch(e.target.value)}
+                      placeholder={language === 'ar' ? 'بحث باسم الطالب، التخصص، الإيميل، الهاتف، أو اسم الدورة/الفعالية...' : 'Öğrenci adı, bölüm, e-posta, telefon veya etkinlik adı ile ara...'}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-9 pl-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-red-600 font-medium"
+                    />
+                  </div>
+
+                  {/* Registrations Table */}
+                  {filtered.length === 0 ? (
+                    <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200 space-y-2">
+                      <Users className="w-8 h-8 text-slate-300 mx-auto" />
+                      <p className="text-xs text-slate-500 font-bold">
+                        {language === 'ar' ? 'لا توجد تسجيلات مطابقة لمعايير البحث.' : 'Arama kriterlerine uygun kayıt bulunamadı.'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-700">
+                            <th className="p-2.5 font-bold">#</th>
+                            <th className="p-2.5 font-bold">{t('fullName')}</th>
+                            <th className="p-2.5 font-bold">{language === 'ar' ? 'النوع' : 'Tür'}</th>
+                            <th className="p-2.5 font-bold">{language === 'ar' ? 'المادة / الفعالية' : 'Ders / Etkinlik'}</th>
+                            <th className="p-2.5 font-bold">{language === 'ar' ? 'التخصص' : 'Bölüm'}</th>
+                            <th className="p-2.5 font-bold">{t('emailAddress')}</th>
+                            <th className="p-2.5 font-bold">{t('phoneNumber')}</th>
+                            <th className="p-2.5 font-bold">{language === 'ar' ? 'التاريخ' : 'Tarih'}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {filtered.map((item, idx) => (
+                            <tr key={item.id} className="hover:bg-slate-50/70 transition">
+                              <td className="p-2.5 text-slate-400 font-mono text-[10px]">{idx + 1}</td>
+                              <td className="p-2.5 text-slate-900 font-extrabold whitespace-nowrap">{item.name}</td>
+                              <td className="p-2.5 whitespace-nowrap">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                                  item.type === 'course' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                }`}>
+                                  {item.typeLabel}
+                                </span>
+                              </td>
+                              <td className="p-2.5 text-slate-800 font-bold max-w-[200px] truncate" title={item.itemTitle}>
+                                {item.itemTitle}
+                              </td>
+                              <td className="p-2.5 text-slate-600 font-medium whitespace-nowrap">
+                                <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px]">{item.major || '-'}</span>
+                              </td>
+                              <td className="p-2.5 text-slate-500 font-mono text-[11px] whitespace-nowrap">
+                                {item.email ? <a href={`mailto:${item.email}`} className="text-blue-600 hover:underline">{item.email}</a> : '-'}
+                              </td>
+                              <td className="p-2.5 text-slate-600 font-mono text-[11px] whitespace-nowrap" dir="ltr">
+                                {item.phone ? (
+                                  <a href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-emerald-700 hover:underline font-bold">
+                                    {item.phone}
+                                  </a>
+                                ) : '-'}
+                              </td>
+                              <td className="p-2.5 text-slate-400 font-mono text-[10px] whitespace-nowrap">
+                                {item.date ? item.date.split('T')[0] : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 
